@@ -23,6 +23,9 @@ import java.util.concurrent._
 
 import com.typesafe.scalalogging.Logger
 import com.yammer.metrics.core.{Gauge, Meter}
+import edu.brown.cs.systems.baggage.{Baggage, DetachedBaggage}
+import edu.brown.cs.systems.xtrace.XTrace
+import edu.brown.cs.systems.xtrace.logging.XTraceLogger
 import kafka.metrics.KafkaMetricsGroup
 import kafka.utils.{Logging, NotNothing, Pool}
 import org.apache.kafka.common.memory.MemoryPool
@@ -84,6 +87,27 @@ object RequestChannel extends Logging {
     @volatile var messageConversionsTimeNanos = 0L
     @volatile var temporaryMemoryBytes = 0L
     @volatile var recordNetworkThreadTimeCallback: Option[Long => Unit] = None
+
+    private var detachedBaggage: DetachedBaggage = null
+    private var resultBaggage: DetachedBaggage = null
+
+
+
+    def setDetachedBaggage(detachedBaggage: DetachedBaggage): Unit = {
+      this.detachedBaggage = detachedBaggage
+    }
+
+    def getDetachedBaggage(): DetachedBaggage = {
+      detachedBaggage
+    }
+
+    def stopBaggage(): Unit = {
+      resultBaggage = Baggage.stop()
+    }
+
+    def getStopedBaggage(): DetachedBaggage = {
+      resultBaggage
+    }
 
     val session = Session(context.principal, context.clientAddress)
     private val bodyAndSize: RequestAndSize = context.parseRequest(buffer)
@@ -279,6 +303,8 @@ class RequestChannel(val queueSize: Int, val metricNamePrefix : String) extends 
   private val processors = new ConcurrentHashMap[Int, Processor]()
   val requestQueueSizeMetricName = metricNamePrefix.concat(RequestQueueSizeMetric)
   val responseQueueSizeMetricName = metricNamePrefix.concat(ResponseQueueSizeMetric)
+
+  private val xtrace: XTraceLogger = XTrace.getLogger(classOf[RequestChannel])
 
   newGauge(requestQueueSizeMetricName, new Gauge[Int] {
       def value = requestQueue.size

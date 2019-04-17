@@ -16,6 +16,10 @@
  */
 package org.apache.kafka.clients;
 
+import edu.brown.cs.systems.baggage.Baggage;
+import edu.brown.cs.systems.baggage.DetachedBaggage;
+import edu.brown.cs.systems.xtrace.XTrace;
+import edu.brown.cs.systems.xtrace.logging.XTraceLogger;
 import org.apache.kafka.common.Cluster;
 import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicPartition;
@@ -123,6 +127,14 @@ public class NetworkClient implements KafkaClient {
     private final Sensor throttleTimeSensor;
 
     private final AtomicReference<State> state;
+
+    private XTraceLogger xtrace = XTrace.getLogger(NetworkClient.class);
+
+    public DetachedBaggage detachedBaggage;
+
+    public String serializedBaggage = null;
+
+    public static Map<RequestHeader, String> requestToBaggageMapping;
 
     public NetworkClient(Selectable selector,
                          Metadata metadata,
@@ -485,7 +497,13 @@ public class NetworkClient implements KafkaClient {
 
     private void doSend(ClientRequest clientRequest, boolean isInternalRequest, long now, AbstractRequest request) {
         String destination = clientRequest.destination();
-        RequestHeader header = clientRequest.makeHeader(request.version());
+
+
+        DetachedBaggage b = Baggage.fork();
+        String serializedBaggage = b.toString(DetachedBaggage.StringEncoding.BASE64);
+
+        RequestHeader header = clientRequest.makeHeader(request.version(), serializedBaggage);
+
         if (log.isDebugEnabled()) {
             int latestClientVersion = clientRequest.apiKey().latestVersion();
             if (header.apiVersion() == latestClientVersion) {
@@ -554,6 +572,12 @@ public class NetworkClient implements KafkaClient {
     private void completeResponses(List<ClientResponse> responses) {
         for (ClientResponse response : responses) {
             try {
+                if(response.baggage.length() > 0) {
+                    System.out.println("Baggage start 1: " + response.baggage);
+                    Baggage.start(response.baggage);
+
+                    xtrace.log(".......................\n...............\n..............");
+                }
                 response.onComplete();
             } catch (Exception e) {
                 log.error("Uncaught error in request completion:", e);
@@ -691,6 +715,27 @@ public class NetworkClient implements KafkaClient {
         return responseBody;
     }
 
+
+    private static Struct parseStructMaybeUpdateThrottleTimeMetrics(ByteBuffer responseBuffer, InFlightRequest req,
+                                                                    Sensor throttleTimeSensor, long now) {
+        RequestHeader requestHeader = req.header;
+        ResponseHeader responseHeader = ResponseHeader.parse(responseBuffer);
+
+
+
+        req.serverReturnedBaggage = responseHeader.baggage;
+
+        // Always expect the response version id to be the same as the request version id
+        Struct responseBody = requestHeader.apiKey().parseResponse(requestHeader.apiVersion(), responseBuffer);
+        correlate(requestHeader, responseHeader);
+
+        if (throttleTimeSensor != null && responseBody.hasField(CommonFields.THROTTLE_TIME_MS))
+            throttleTimeSensor.record(responseBody.get(CommonFields.THROTTLE_TIME_MS), now);
+        return responseBody;
+    }
+
+
+
     /**
      * Post process disconnection of a node
      *
@@ -798,6 +843,8 @@ public class NetworkClient implements KafkaClient {
         }
     }
 
+    public static Map<RequestHeader, String> requestheaderToBaggage;
+
     /**
      * Handle any completed receives and update the response list with the responses received.
      *
@@ -808,8 +855,11 @@ public class NetworkClient implements KafkaClient {
         for (NetworkReceive receive : this.selector.completedReceives()) {
             String source = receive.source();
             InFlightRequest req = inFlightRequests.completeNext(source);
-            Struct responseStruct = parseStructMaybeUpdateThrottleTimeMetrics(receive.payload(), req.header,
-                throttleTimeSensor, now);
+//            Struct responseStruct = parseStructMaybeUpdateThrottleTimeMetrics(receive.payload(), req.header,
+//                throttleTimeSensor, now);
+
+            Struct responseStruct = parseStructMaybeUpdateThrottleTimeMetrics(receive.payload(), req, throttleTimeSensor, now);
+
             if (log.isTraceEnabled()) {
                 log.trace("Completed receive from node {} for {} with correlation id {}, received {}", req.destination,
                     req.header.apiKey(), req.header.correlationId(), responseStruct);
@@ -818,17 +868,20 @@ public class NetworkClient implements KafkaClient {
             AbstractResponse body = AbstractResponse.
                     parseResponse(req.header.apiKey(), responseStruct, req.header.apiVersion());
             maybeThrottle(body, req.header.apiVersion(), req.destination, now);
-            if (req.isInternalRequest && body instanceof MetadataResponse)
+            if (req.isInternalRequest && body instanceof MetadataResponse) {
+                Baggage.start(req.serverReturnedBaggage);
                 metadataUpdater.handleCompletedMetadataResponse(req.header, now, (MetadataResponse) body);
+            }
             else if (req.isInternalRequest && body instanceof ApiVersionsResponse)
                 handleApiVersionsResponse(responses, req, now, (ApiVersionsResponse) body);
             else
-                responses.add(req.completed(body, now));
+                responses.add(req.completed(body, now, req.serverReturnedBaggage));
         }
     }
 
     private void handleApiVersionsResponse(List<ClientResponse> responses,
                                            InFlightRequest req, long now, ApiVersionsResponse apiVersionsResponse) {
+        Baggage.start(req.serverReturnedBaggage);
         final String node = req.destination;
         if (apiVersionsResponse.error() != Errors.NONE) {
             if (req.request.version() == 0 || apiVersionsResponse.error() != Errors.UNSUPPORTED_VERSION) {
@@ -1133,6 +1186,7 @@ public class NetworkClient implements KafkaClient {
         final long sendTimeMs;
         final long createdTimeMs;
         final long requestTimeoutMs;
+        public String serverReturnedBaggage;
 
         public InFlightRequest(ClientRequest clientRequest,
                                RequestHeader header,
@@ -1177,6 +1231,15 @@ public class NetworkClient implements KafkaClient {
         public ClientResponse completed(AbstractResponse response, long timeMs) {
             return new ClientResponse(header, callback, destination, createdTimeMs, timeMs,
                     false, null, null, response);
+        }
+
+        public ClientResponse completed(AbstractResponse response, long timeMs, String baggage) {
+            ClientResponse clientResponse = new ClientResponse(header, callback, destination, createdTimeMs, timeMs,
+                    false, null, null, response);
+
+            clientResponse.baggage = baggage;
+
+            return clientResponse;
         }
 
         public ClientResponse disconnected(long timeMs, AuthenticationException authenticationException) {

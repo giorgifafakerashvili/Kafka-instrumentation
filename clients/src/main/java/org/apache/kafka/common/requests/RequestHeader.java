@@ -16,6 +16,8 @@
  */
 package org.apache.kafka.common.requests;
 
+import edu.brown.cs.systems.baggage.Baggage;
+import edu.brown.cs.systems.baggage.DetachedBaggage;
 import org.apache.kafka.common.errors.InvalidRequestException;
 import org.apache.kafka.common.protocol.ApiKeys;
 import org.apache.kafka.common.protocol.types.Field;
@@ -41,6 +43,7 @@ public class RequestHeader extends AbstractRequestResponse {
     public static final Schema SCHEMA = new Schema(
             new Field(API_KEY_FIELD_NAME, INT16, "The id of the request type."),
             new Field(API_VERSION_FIELD_NAME, INT16, "The version of the API."),
+            new Field("baggage", NULLABLE_STRING, "baggage"),
             new Field(CORRELATION_ID_FIELD_NAME, INT32, "A user-supplied integer value that will be passed back with the response"),
             new Field(CLIENT_ID_FIELD_NAME, NULLABLE_STRING, "A user specified identifier for the client making the request.", ""));
 
@@ -49,12 +52,14 @@ public class RequestHeader extends AbstractRequestResponse {
     private static final Schema CONTROLLED_SHUTDOWN_V0_SCHEMA = new Schema(
             new Field(API_KEY_FIELD_NAME, INT16, "The id of the request type."),
             new Field(API_VERSION_FIELD_NAME, INT16, "The version of the API."),
+            new Field("baggage", NULLABLE_STRING, "baggage"),
             new Field(CORRELATION_ID_FIELD_NAME, INT32, "A user-supplied integer value that will be passed back with the response"));
 
     private final ApiKeys apiKey;
     private final short apiVersion;
     private final String clientId;
     private final int correlationId;
+    public String baggage;
 
     public RequestHeader(Struct struct) {
         short apiKey = struct.getShort(API_KEY_FIELD_NAME);
@@ -70,6 +75,7 @@ public class RequestHeader extends AbstractRequestResponse {
         else
             clientId = "";
         correlationId = struct.getInt(CORRELATION_ID_FIELD_NAME);
+        baggage = struct.getString("baggage");
     }
 
     public RequestHeader(ApiKeys apiKey, short version, String clientId, int correlation) {
@@ -77,6 +83,14 @@ public class RequestHeader extends AbstractRequestResponse {
         this.apiVersion = version;
         this.clientId = clientId;
         this.correlationId = correlation;
+    }
+
+    public RequestHeader(ApiKeys apiKey, short version, String clientId, int correlation, String baggage) {
+        this.apiKey = requireNonNull(apiKey);
+        this.apiVersion = version;
+        this.clientId = clientId;
+        this.correlationId = correlation;
+        this.baggage = baggage;
     }
 
     public Struct toStruct() {
@@ -89,6 +103,7 @@ public class RequestHeader extends AbstractRequestResponse {
         if (struct.hasField(CLIENT_ID_FIELD_NAME))
             struct.set(CLIENT_ID_FIELD_NAME, clientId);
         struct.set(CORRELATION_ID_FIELD_NAME, correlationId);
+        struct.set("baggage", (String) baggage);
         return struct;
     }
 

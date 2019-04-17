@@ -24,6 +24,9 @@ import java.util.concurrent.{CountDownLatch, TimeUnit}
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.yammer.metrics.core.Meter
+import edu.brown.cs.systems.baggage.{Baggage, DetachedBaggage}
+import edu.brown.cs.systems.xtrace.XTrace
+import edu.brown.cs.systems.xtrace.logging.XTraceLogger
 import org.apache.kafka.common.internals.FatalExitError
 import org.apache.kafka.common.utils.{KafkaThread, Time}
 
@@ -42,6 +45,8 @@ class KafkaRequestHandler(id: Int,
   this.logIdent = "[Kafka Request Handler " + id + " on Broker " + brokerId + "], "
   private val shutdownComplete = new CountDownLatch(1)
   @volatile private var stopped = false
+
+  private val xtrace: XTraceLogger = XTrace.getLogger(classOf[KafkaRequestHandler])
 
   def run() {
     while (!stopped) {
@@ -63,6 +68,12 @@ class KafkaRequestHandler(id: Int,
           return
 
         case request: RequestChannel.Request =>
+
+          val detachedBaggage: DetachedBaggage = request.getDetachedBaggage()
+          Baggage.start(detachedBaggage)
+
+          xtrace.log("Request has been received by KafkaRquestHandler and it will be handled by KafkaApis")
+
           try {
             request.requestDequeueTimeNanos = endTime
             trace(s"Kafka request handler $id on broker $brokerId handling request $request")

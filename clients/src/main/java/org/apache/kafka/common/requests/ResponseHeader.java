@@ -24,19 +24,26 @@ import org.apache.kafka.common.protocol.types.Struct;
 import java.nio.ByteBuffer;
 
 import static org.apache.kafka.common.protocol.types.Type.INT32;
+import static org.apache.kafka.common.protocol.types.Type.NULLABLE_STRING;
 
 /**
  * A response header in the kafka protocol.
  */
 public class ResponseHeader extends AbstractRequestResponse {
     public static final Schema SCHEMA = new Schema(
-            new Field("correlation_id", INT32, "The user-supplied value passed in with the request"));
+            new Field("correlation_id", INT32, "The user-supplied value passed in with the request"),
+            new Field("baggage", NULLABLE_STRING, "Baggage"));
+
     private static final BoundField CORRELATION_KEY_FIELD = SCHEMA.get("correlation_id");
+    private static final BoundField BAGGAGE_FIELD = SCHEMA.get("baggage");
 
     private final int correlationId;
 
+    public String baggage = null;
+
     public ResponseHeader(Struct struct) {
         correlationId = struct.getInt(CORRELATION_KEY_FIELD);
+        baggage = struct.getString(BAGGAGE_FIELD);
     }
 
     public ResponseHeader(int correlationId) {
@@ -50,6 +57,7 @@ public class ResponseHeader extends AbstractRequestResponse {
     public Struct toStruct() {
         Struct struct = new Struct(SCHEMA);
         struct.set(CORRELATION_KEY_FIELD, correlationId);
+        struct.set(BAGGAGE_FIELD, baggage);
         return struct;
     }
 

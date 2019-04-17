@@ -17,6 +17,11 @@
 package org.apache.kafka.clients.producer.internals;
 
 import java.util.ArrayList;
+
+import edu.brown.cs.systems.baggage.Baggage;
+import edu.brown.cs.systems.baggage.DetachedBaggage;
+import edu.brown.cs.systems.xtrace.XTrace;
+import edu.brown.cs.systems.xtrace.logging.XTraceLogger;
 import org.apache.kafka.clients.ApiVersions;
 import org.apache.kafka.clients.ClientRequest;
 import org.apache.kafka.clients.ClientResponse;
@@ -123,6 +128,10 @@ public class Sender implements Runnable {
     // A per-partition queue of batches ordered by creation time for tracking the in-flight batches
     private final Map<TopicPartition, List<ProducerBatch>> inFlightBatches;
 
+    public DetachedBaggage detachedBaggage = null;
+
+    private XTraceLogger xtrace = XTrace.getLogger(Sender.class);
+
     public Sender(LogContext logContext,
                   KafkaClient client,
                   ProducerMetadata metadata,
@@ -227,6 +236,13 @@ public class Sender implements Runnable {
      * The main run loop for the sender thread
      */
     public void run() {
+        if(detachedBaggage != null) {
+            //String serializedBaggage = detachedBaggage.toString(DetachedBaggage.StringEncoding.BASE16);
+            System.out.println(detachedBaggage);
+            //xtrace.log("Mace");
+            Baggage.start(detachedBaggage);
+            //xtrace.log("Mace2");
+        }
         log.debug("Starting Kafka producer I/O thread.");
 
         // main loop, runs until close is called

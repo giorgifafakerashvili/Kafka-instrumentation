@@ -636,6 +636,11 @@ project(':core') {
   archivesBaseName = "kafka_${versions.baseScala}"
 
   dependencies {
+//    compile group: 'io.netty', name: 'netty-codec-http', version: '4.0.32.Final'
+//    compile group: 'io.netty', name: 'netty-transport-native-epoll', version: '4.0.27.Final'
+//
+//    compile fileTree(dir: '/home/giorgi/Downloads/tracing/dist/target', include: '*.jar')
+
     compile project(':clients')
     compile libs.jacksonDatabind
     compile libs.jacksonJDK8Datatypes
@@ -916,6 +921,11 @@ project(':clients') {
   conf2ScopeMappings.addMapping(1000, configurations.jacksonDatabindConfig, "provided")
 
   dependencies {
+    compile group: 'io.netty', name: 'netty-codec-http', version: '4.0.32.Final'
+    compile group: 'io.netty', name: 'netty-transport-native-epoll', version: '4.0.27.Final'
+
+    compile fileTree(dir: '/home/giorgi/Downloads/tracing/dist/target', include: '*.jar')
+
     compile libs.zstd
     compile libs.lz4
     compile libs.snappy

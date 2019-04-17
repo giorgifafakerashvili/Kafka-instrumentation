@@ -152,6 +152,17 @@ class LogSegment private[log] (val log: FileRecords,
 
       ensureOffsetInRange(largestOffset)
 
+//      val f: File = log.file()
+//
+//      println("File getAbsolutePath: " + f.getAbsolutePath)
+//      println("File getPath: " + f.getPath())
+//      println("FIle getCanonicalPath: " + f.getCanonicalPath)
+//
+//      val currentDirectory = new java.io.File(".").getCanonicalPath
+//
+//      println("CurrentDirectory: " + currentDirectory)
+
+
       // append the messages
       val appendedBytes = log.append(records)
       trace(s"Appended $appendedBytes to ${log.file} at end offset $largestOffset")

@@ -16,6 +16,8 @@
  */
 package org.apache.kafka.common.requests;
 
+import edu.brown.cs.systems.baggage.Baggage;
+import edu.brown.cs.systems.baggage.DetachedBaggage;
 import org.apache.kafka.common.errors.InvalidRequestException;
 import org.apache.kafka.common.network.ListenerName;
 import org.apache.kafka.common.network.Send;
@@ -75,6 +77,12 @@ public class RequestContext {
 
     public Send buildResponse(AbstractResponse body) {
         ResponseHeader responseHeader = header.toResponseHeader();
+
+        DetachedBaggage detachedBaggage = Baggage.fork();
+        String str = detachedBaggage.toString(DetachedBaggage.StringEncoding.BASE64);
+
+        responseHeader.baggage = str;
+
         return body.toSend(connectionId, responseHeader, apiVersion());
     }
 

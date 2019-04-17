@@ -16,6 +16,10 @@
  */
 package org.apache.kafka.common.utils;
 
+import edu.brown.cs.systems.baggage.Baggage;
+import edu.brown.cs.systems.baggage.DetachedBaggage;
+import edu.brown.cs.systems.xtrace.XTrace;
+import edu.brown.cs.systems.xtrace.logging.XTraceLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +29,27 @@ import org.slf4j.LoggerFactory;
 public class KafkaThread extends Thread {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
+
+    private static class BaggageRunnable implements Runnable {
+
+        private static final XTraceLogger xtrace = XTrace.getLogger(KafkaThread.class);
+
+        private DetachedBaggage b;
+        private final Runnable r;
+
+        public BaggageRunnable(Runnable r) {
+            this.b = Baggage.fork();
+            this.r = r;
+        }
+
+        @Override public void run() {
+            Baggage.start(b);
+            xtrace.log("Entered BaggageRunnable.run()");
+            r.run();
+            xtrace.log("Exiting BaggageRunnable.run()");
+            b = Baggage.stop();
+        }
+    }
     
     public static KafkaThread daemon(final String name, Runnable runnable) {
         return new KafkaThread(name, runnable, true);
@@ -40,7 +65,7 @@ public class KafkaThread extends Thread {
     }
 
     public KafkaThread(final String name, Runnable runnable, boolean daemon) {
-        super(runnable, name);
+        super(new BaggageRunnable(runnable), name);
         configureThread(name, daemon);
     }
 

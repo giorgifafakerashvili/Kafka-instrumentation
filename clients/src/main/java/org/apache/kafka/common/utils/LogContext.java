@@ -16,6 +16,8 @@
  */
 package org.apache.kafka.common.utils;
 
+import edu.brown.cs.systems.xtrace.XTrace;
+import edu.brown.cs.systems.xtrace.logging.XTraceLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -56,6 +58,8 @@ public class LogContext {
     }
 
     private static abstract class AbstractKafkaLogger implements Logger {
+        public XTraceLogger xtrace = XTrace.getLogger(AbstractKafkaLogger.class);
+
         private final String prefix;
 
         protected AbstractKafkaLogger(final String prefix) {
@@ -134,6 +138,7 @@ public class LogContext {
 
         @Override
         public void trace(String message) {
+            xtrace.log(message);
             if (logger.isTraceEnabled()) {
                 writeLog(null, LocationAwareLogger.TRACE_INT, message, null, null);
             }
@@ -141,6 +146,7 @@ public class LogContext {
 
         @Override
         public void trace(String format, Object arg) {
+            xtrace.log(format);
             if (logger.isTraceEnabled()) {
                 writeLog(null, LocationAwareLogger.TRACE_INT, format, new Object[]{arg}, null);
             }
@@ -148,6 +154,7 @@ public class LogContext {
 
         @Override
         public void trace(String format, Object arg1, Object arg2) {
+            xtrace.log(format);
             if (logger.isTraceEnabled()) {
                 writeLog(null, LocationAwareLogger.TRACE_INT, format, new Object[]{arg1, arg2}, null);
             }
@@ -155,6 +162,7 @@ public class LogContext {
 
         @Override
         public void trace(String format, Object... args) {
+            xtrace.log(format);
             if (logger.isTraceEnabled()) {
                 writeLog(null, LocationAwareLogger.TRACE_INT, format, args, null);
             }
@@ -162,6 +170,7 @@ public class LogContext {
 
         @Override
         public void trace(String msg, Throwable t) {
+            xtrace.log(msg);
             if (logger.isTraceEnabled()) {
                 writeLog(null, LocationAwareLogger.TRACE_INT, msg, null, t);
             }
@@ -169,6 +178,7 @@ public class LogContext {
 
         @Override
         public void trace(Marker marker, String msg) {
+            xtrace.log(msg);
             if (logger.isTraceEnabled()) {
                 writeLog(marker, LocationAwareLogger.TRACE_INT, msg, null, null);
             }
@@ -176,6 +186,7 @@ public class LogContext {
 
         @Override
         public void trace(Marker marker, String format, Object arg) {
+            xtrace.log(format);
             if (logger.isTraceEnabled()) {
                 writeLog(marker, LocationAwareLogger.TRACE_INT, format, new Object[]{arg}, null);
             }
@@ -183,6 +194,7 @@ public class LogContext {
 
         @Override
         public void trace(Marker marker, String format, Object arg1, Object arg2) {
+            xtrace.log(format);
             if (logger.isTraceEnabled()) {
                 writeLog(marker, LocationAwareLogger.TRACE_INT, format, new Object[]{arg1, arg2}, null);
             }
@@ -190,6 +202,7 @@ public class LogContext {
 
         @Override
         public void trace(Marker marker, String format, Object... argArray) {
+            xtrace.log(format);
             if (logger.isTraceEnabled()) {
                 writeLog(marker, LocationAwareLogger.TRACE_INT, format, argArray, null);
             }
@@ -197,6 +210,7 @@ public class LogContext {
 
         @Override
         public void trace(Marker marker, String msg, Throwable t) {
+            xtrace.log(msg);
             if (logger.isTraceEnabled()) {
                 writeLog(marker, LocationAwareLogger.TRACE_INT, msg, null, t);
             }
@@ -204,6 +218,7 @@ public class LogContext {
 
         @Override
         public void debug(String message) {
+            xtrace.log(message);
             if (logger.isDebugEnabled()) {
                 writeLog(null, LocationAwareLogger.DEBUG_INT, message, null, null);
             }
@@ -211,6 +226,7 @@ public class LogContext {
 
         @Override
         public void debug(String format, Object arg) {
+            xtrace.log(format);
             if (logger.isDebugEnabled()) {
                 writeLog(null, LocationAwareLogger.DEBUG_INT, format, new Object[]{arg}, null);
             }
@@ -218,6 +234,7 @@ public class LogContext {
 
         @Override
         public void debug(String format, Object arg1, Object arg2) {
+            xtrace.log(format);
             if (logger.isDebugEnabled()) {
                 writeLog(null, LocationAwareLogger.DEBUG_INT, format, new Object[]{arg1, arg2}, null);
             }
@@ -225,6 +242,7 @@ public class LogContext {
 
         @Override
         public void debug(String format, Object... args) {
+            xtrace.log(format);
             if (logger.isDebugEnabled()) {
                 writeLog(null, LocationAwareLogger.DEBUG_INT, format, args, null);
             }
@@ -232,6 +250,7 @@ public class LogContext {
 
         @Override
         public void debug(String msg, Throwable t) {
+            xtrace.log(msg);
             if (logger.isDebugEnabled()) {
                 writeLog(null, LocationAwareLogger.DEBUG_INT, msg, null, t);
             }
@@ -239,6 +258,7 @@ public class LogContext {
 
         @Override
         public void debug(Marker marker, String msg) {
+            xtrace.log(msg);
             if (logger.isDebugEnabled()) {
                 writeLog(marker, LocationAwareLogger.DEBUG_INT, msg, null, null);
             }
@@ -246,6 +266,7 @@ public class LogContext {
 
         @Override
         public void debug(Marker marker, String format, Object arg) {
+            xtrace.log(format);
             if (logger.isDebugEnabled()) {
                 writeLog(marker, LocationAwareLogger.DEBUG_INT, format, new Object[]{arg}, null);
             }
@@ -253,6 +274,7 @@ public class LogContext {
 
         @Override
         public void debug(Marker marker, String format, Object arg1, Object arg2) {
+            xtrace.log(format);
             if (logger.isDebugEnabled()) {
                 writeLog(marker, LocationAwareLogger.DEBUG_INT, format, new Object[]{arg1, arg2}, null);
             }
@@ -260,6 +282,7 @@ public class LogContext {
 
         @Override
         public void debug(Marker marker, String format, Object... arguments) {
+            xtrace.log(format);
             if (logger.isDebugEnabled()) {
                 writeLog(marker, LocationAwareLogger.DEBUG_INT, format, arguments, null);
             }
@@ -267,6 +290,7 @@ public class LogContext {
 
         @Override
         public void debug(Marker marker, String msg, Throwable t) {
+            xtrace.log(msg);
             if (logger.isDebugEnabled()) {
                 writeLog(marker, LocationAwareLogger.DEBUG_INT, msg, null, t);
             }
@@ -274,151 +298,181 @@ public class LogContext {
 
         @Override
         public void warn(String message) {
+            xtrace.log(message);
             writeLog(null, LocationAwareLogger.WARN_INT, message, null, null);
         }
 
         @Override
         public void warn(String format, Object arg) {
+            xtrace.log(format);
             writeLog(null, LocationAwareLogger.WARN_INT, format, new Object[]{arg}, null);
         }
 
         @Override
         public void warn(String message, Object arg1, Object arg2) {
+            xtrace.log(message);
             writeLog(null, LocationAwareLogger.WARN_INT, message, new Object[]{arg1, arg2}, null);
         }
 
         @Override
         public void warn(String format, Object... args) {
+            xtrace.log(format);
             writeLog(null, LocationAwareLogger.WARN_INT, format, args, null);
         }
 
         @Override
         public void warn(String msg, Throwable t) {
+            xtrace.log(msg);
             writeLog(null, LocationAwareLogger.WARN_INT, msg, null, t);
         }
 
         @Override
         public void warn(Marker marker, String msg) {
+            xtrace.log(msg);
             writeLog(marker, LocationAwareLogger.WARN_INT, msg, null, null);
         }
 
         @Override
         public void warn(Marker marker, String format, Object arg) {
+            xtrace.log(format);
             writeLog(marker, LocationAwareLogger.WARN_INT, format, new Object[]{arg}, null);
         }
 
         @Override
         public void warn(Marker marker, String format, Object arg1, Object arg2) {
+            xtrace.log(format);
             writeLog(marker, LocationAwareLogger.WARN_INT, format, new Object[]{arg1, arg2}, null);
         }
 
         @Override
         public void warn(Marker marker, String format, Object... arguments) {
+            xtrace.log(format);
             writeLog(marker, LocationAwareLogger.WARN_INT, format, arguments, null);
         }
 
         @Override
         public void warn(Marker marker, String msg, Throwable t) {
+            xtrace.log(msg);
             writeLog(marker, LocationAwareLogger.WARN_INT, msg, null, t);
         }
 
         @Override
         public void error(String message) {
+            xtrace.log(message);
             writeLog(null, LocationAwareLogger.ERROR_INT, message, null, null);
         }
 
         @Override
         public void error(String format, Object arg) {
+            xtrace.log(format);
             writeLog(null, LocationAwareLogger.ERROR_INT, format, new Object[]{arg}, null);
         }
 
         @Override
         public void error(String format, Object arg1, Object arg2) {
+            xtrace.log(format);
             writeLog(null, LocationAwareLogger.ERROR_INT, format, new Object[]{arg1, arg2}, null);
         }
 
         @Override
         public void error(String format, Object... args) {
+            xtrace.log(format);
             writeLog(null, LocationAwareLogger.ERROR_INT, format, args, null);
         }
 
         @Override
         public void error(String msg, Throwable t) {
+            xtrace.log(msg);
             writeLog(null, LocationAwareLogger.ERROR_INT, msg, null, t);
         }
 
         @Override
         public void error(Marker marker, String msg) {
+            xtrace.log(msg);
             writeLog(marker, LocationAwareLogger.ERROR_INT, msg, null, null);
         }
 
         @Override
         public void error(Marker marker, String format, Object arg) {
+            xtrace.log(format);
             writeLog(marker, LocationAwareLogger.ERROR_INT, format, new Object[]{arg}, null);
         }
 
         @Override
         public void error(Marker marker, String format, Object arg1, Object arg2) {
+            xtrace.log(format);
             writeLog(marker, LocationAwareLogger.ERROR_INT, format, new Object[]{arg1, arg2}, null);
         }
 
         @Override
         public void error(Marker marker, String format, Object... arguments) {
+            xtrace.log(format);
             writeLog(marker, LocationAwareLogger.ERROR_INT, format, arguments, null);
         }
 
         @Override
         public void error(Marker marker, String msg, Throwable t) {
+            xtrace.log(msg);
             writeLog(marker, LocationAwareLogger.ERROR_INT, msg, null, t);
         }
 
         @Override
         public void info(String msg) {
+            xtrace.log(msg);
             writeLog(null, LocationAwareLogger.INFO_INT, msg, null, null);
         }
 
         @Override
         public void info(String format, Object arg) {
+            xtrace.log(format);
             writeLog(null, LocationAwareLogger.INFO_INT, format, new Object[]{arg}, null);
         }
 
         @Override
         public void info(String format, Object arg1, Object arg2) {
+            xtrace.log(format);
             writeLog(null, LocationAwareLogger.INFO_INT, format, new Object[]{arg1, arg2}, null);
         }
 
         @Override
         public void info(String format, Object... args) {
+            xtrace.log(format);
             writeLog(null, LocationAwareLogger.INFO_INT, format, args, null);
         }
 
         @Override
         public void info(String msg, Throwable t) {
+            xtrace.log(msg);
             writeLog(null, LocationAwareLogger.INFO_INT, msg, null, t);
         }
 
         @Override
         public void info(Marker marker, String msg) {
+            xtrace.log(msg);
             writeLog(marker, LocationAwareLogger.INFO_INT, msg, null, null);
         }
 
         @Override
         public void info(Marker marker, String format, Object arg) {
+            xtrace.log(format);
             writeLog(marker, LocationAwareLogger.INFO_INT, format, new Object[]{arg}, null);
         }
 
         @Override
         public void info(Marker marker, String format, Object arg1, Object arg2) {
+            xtrace.log(format);
             writeLog(marker, LocationAwareLogger.INFO_INT, format, new Object[]{arg1, arg2}, null);
         }
 
         @Override
         public void info(Marker marker, String format, Object... arguments) {
+            xtrace.log(format);
             writeLog(marker, LocationAwareLogger.INFO_INT, format, arguments, null);
         }
 
         @Override
         public void info(Marker marker, String msg, Throwable t) {
+            xtrace.log(msg);
             writeLog(marker, LocationAwareLogger.INFO_INT, msg, null, t);
         }
 
@@ -500,6 +554,7 @@ public class LogContext {
 
         @Override
         public void trace(String message) {
+            xtrace.log(message);
             if (logger.isTraceEnabled()) {
                 logger.trace(addPrefix(message));
             }
@@ -507,6 +562,7 @@ public class LogContext {
 
         @Override
         public void trace(String message, Object arg) {
+            xtrace.log(message);
             if (logger.isTraceEnabled()) {
                 logger.trace(addPrefix(message), arg);
             }
@@ -514,6 +570,7 @@ public class LogContext {
 
         @Override
         public void trace(String message, Object arg1, Object arg2) {
+            xtrace.log(message);
             if (logger.isTraceEnabled()) {
                 logger.trace(addPrefix(message), arg1, arg2);
             }
@@ -521,6 +578,7 @@ public class LogContext {
 
         @Override
         public void trace(String message, Object... args) {
+            xtrace.log(message);
             if (logger.isTraceEnabled()) {
                 logger.trace(addPrefix(message), args);
             }
@@ -528,6 +586,7 @@ public class LogContext {
 
         @Override
         public void trace(String msg, Throwable t) {
+            xtrace.log(msg);
             if (logger.isTraceEnabled()) {
                 logger.trace(addPrefix(msg), t);
             }
@@ -535,6 +594,7 @@ public class LogContext {
 
         @Override
         public void trace(Marker marker, String msg) {
+            xtrace.log(msg);
             if (logger.isTraceEnabled()) {
                 logger.trace(marker, addPrefix(msg));
             }
@@ -542,6 +602,7 @@ public class LogContext {
 
         @Override
         public void trace(Marker marker, String format, Object arg) {
+            xtrace.log(format);
             if (logger.isTraceEnabled()) {
                 logger.trace(marker, addPrefix(format), arg);
             }
@@ -549,6 +610,7 @@ public class LogContext {
 
         @Override
         public void trace(Marker marker, String format, Object arg1, Object arg2) {
+            xtrace.log(format);
             if (logger.isTraceEnabled()) {
                 logger.trace(marker, addPrefix(format), arg1, arg2);
             }
@@ -556,6 +618,7 @@ public class LogContext {
 
         @Override
         public void trace(Marker marker, String format, Object... argArray) {
+            xtrace.log(format);
             if (logger.isTraceEnabled()) {
                 logger.trace(marker, addPrefix(format), argArray);
             }
@@ -563,6 +626,7 @@ public class LogContext {
 
         @Override
         public void trace(Marker marker, String msg, Throwable t) {
+            xtrace.log(msg);
             if (logger.isTraceEnabled()) {
                 logger.trace(marker, addPrefix(msg), t);
             }
@@ -570,6 +634,7 @@ public class LogContext {
 
         @Override
         public void debug(String message) {
+            xtrace.log(message);
             if (logger.isDebugEnabled()) {
                 logger.debug(addPrefix(message));
             }
@@ -577,6 +642,7 @@ public class LogContext {
 
         @Override
         public void debug(String message, Object arg) {
+            xtrace.log(message);
             if (logger.isDebugEnabled()) {
                 logger.debug(addPrefix(message), arg);
             }
@@ -584,6 +650,7 @@ public class LogContext {
 
         @Override
         public void debug(String message, Object arg1, Object arg2) {
+            xtrace.log(message);
             if (logger.isDebugEnabled()) {
                 logger.debug(addPrefix(message), arg1, arg2);
             }
@@ -591,6 +658,7 @@ public class LogContext {
 
         @Override
         public void debug(String message, Object... args) {
+            xtrace.log(message);
             if (logger.isDebugEnabled()) {
                 logger.debug(addPrefix(message), args);
             }
@@ -598,6 +666,7 @@ public class LogContext {
 
         @Override
         public void debug(String msg, Throwable t) {
+            xtrace.log(msg);
             if (logger.isDebugEnabled()) {
                 logger.debug(addPrefix(msg), t);
             }
@@ -605,6 +674,7 @@ public class LogContext {
 
         @Override
         public void debug(Marker marker, String msg) {
+            xtrace.log(msg);
             if (logger.isDebugEnabled()) {
                 logger.debug(marker, addPrefix(msg));
             }
@@ -612,6 +682,7 @@ public class LogContext {
 
         @Override
         public void debug(Marker marker, String format, Object arg) {
+            xtrace.log(format);
             if (logger.isDebugEnabled()) {
                 logger.debug(marker, addPrefix(format), arg);
             }
@@ -619,6 +690,7 @@ public class LogContext {
 
         @Override
         public void debug(Marker marker, String format, Object arg1, Object arg2) {
+            xtrace.log(format);
             if (logger.isDebugEnabled()) {
                 logger.debug(marker, addPrefix(format), arg1, arg2);
             }
@@ -626,6 +698,7 @@ public class LogContext {
 
         @Override
         public void debug(Marker marker, String format, Object... arguments) {
+            xtrace.log(format);
             if (logger.isDebugEnabled()) {
                 logger.debug(marker, addPrefix(format), arguments);
             }
@@ -633,6 +706,7 @@ public class LogContext {
 
         @Override
         public void debug(Marker marker, String msg, Throwable t) {
+            xtrace.log(msg);
             if (logger.isDebugEnabled()) {
                 logger.debug(marker, addPrefix(msg), t);
             }
@@ -640,151 +714,181 @@ public class LogContext {
 
         @Override
         public void warn(String message) {
+            xtrace.log(message);
             logger.warn(addPrefix(message));
         }
 
         @Override
         public void warn(String message, Object arg) {
+            xtrace.log(message);
             logger.warn(addPrefix(message), arg);
         }
 
         @Override
         public void warn(String message, Object arg1, Object arg2) {
+            xtrace.log(message);
             logger.warn(addPrefix(message), arg1, arg2);
         }
 
         @Override
         public void warn(String message, Object... args) {
+            xtrace.log(message);
             logger.warn(addPrefix(message), args);
         }
 
         @Override
         public void warn(String msg, Throwable t) {
+            xtrace.log(msg);
             logger.warn(addPrefix(msg), t);
         }
 
         @Override
         public void warn(Marker marker, String msg) {
+            xtrace.log(msg);
             logger.warn(marker, addPrefix(msg));
         }
 
         @Override
         public void warn(Marker marker, String format, Object arg) {
+            xtrace.log(format);
             logger.warn(marker, addPrefix(format), arg);
         }
 
         @Override
         public void warn(Marker marker, String format, Object arg1, Object arg2) {
+            xtrace.log(format);
             logger.warn(marker, addPrefix(format), arg1, arg2);
         }
 
         @Override
         public void warn(Marker marker, String format, Object... arguments) {
+            xtrace.log(format);
             logger.warn(marker, addPrefix(format), arguments);
         }
 
         @Override
         public void warn(Marker marker, String msg, Throwable t) {
+            xtrace.log(msg);
             logger.warn(marker, addPrefix(msg), t);
         }
 
         @Override
         public void error(String message) {
+            xtrace.log(message);
             logger.error(addPrefix(message));
         }
 
         @Override
         public void error(String message, Object arg) {
+            xtrace.log(message);
             logger.error(addPrefix(message), arg);
         }
 
         @Override
         public void error(String message, Object arg1, Object arg2) {
+            xtrace.log(message);
             logger.error(addPrefix(message), arg1, arg2);
         }
 
         @Override
         public void error(String message, Object... args) {
+            xtrace.log(message);
             logger.error(addPrefix(message), args);
         }
 
         @Override
         public void error(String msg, Throwable t) {
+            xtrace.log(msg);
             logger.error(addPrefix(msg), t);
         }
 
         @Override
         public void error(Marker marker, String msg) {
+            xtrace.log(msg);
             logger.error(marker, addPrefix(msg));
         }
 
         @Override
         public void error(Marker marker, String format, Object arg) {
+            xtrace.log(format);
             logger.error(marker, addPrefix(format), arg);
         }
 
         @Override
         public void error(Marker marker, String format, Object arg1, Object arg2) {
+            xtrace.log(format);
             logger.error(marker, addPrefix(format), arg1, arg2);
         }
 
         @Override
         public void error(Marker marker, String format, Object... arguments) {
+            xtrace.log(format);
             logger.error(marker, addPrefix(format), arguments);
         }
 
         @Override
         public void error(Marker marker, String msg, Throwable t) {
+            xtrace.log(msg);
             logger.error(marker, addPrefix(msg), t);
         }
 
         @Override
         public void info(String message) {
+            xtrace.log(message);
             logger.info(addPrefix(message));
         }
 
         @Override
         public void info(String message, Object arg) {
+            xtrace.log(message);
             logger.info(addPrefix(message), arg);
         }
 
         @Override
         public void info(String message, Object arg1, Object arg2) {
+            xtrace.log(message);
             logger.info(addPrefix(message), arg1, arg2);
         }
 
         @Override
         public void info(String message, Object... args) {
+            xtrace.log(message);
             logger.info(addPrefix(message), args);
         }
 
         @Override
         public void info(String msg, Throwable t) {
+            xtrace.log(msg);
             logger.info(addPrefix(msg), t);
         }
 
         @Override
         public void info(Marker marker, String msg) {
+            xtrace.log(msg);
             logger.info(marker, addPrefix(msg));
         }
 
         @Override
         public void info(Marker marker, String format, Object arg) {
+            xtrace.log(format);
             logger.info(marker, addPrefix(format), arg);
         }
 
         @Override
         public void info(Marker marker, String format, Object arg1, Object arg2) {
+            xtrace.log(format);
             logger.info(marker, addPrefix(format), arg1, arg2);
         }
 
         @Override
         public void info(Marker marker, String format, Object... arguments) {
+            xtrace.log(format);
             logger.info(marker, addPrefix(format), arguments);
         }
 
         @Override
         public void info(Marker marker, String msg, Throwable t) {
+            xtrace.log(msg);
             logger.info(marker, addPrefix(msg), t);
         }
 

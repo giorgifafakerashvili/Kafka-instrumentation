@@ -25,6 +25,9 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.{Collections, Optional, Properties}
 
+import edu.brown.cs.systems.baggage.{Baggage, DetachedBaggage}
+import edu.brown.cs.systems.xtrace.XTrace
+import edu.brown.cs.systems.xtrace.logging.XTraceLogger
 import kafka.admin.{AdminUtils, RackAwareMode}
 import kafka.api.{ApiVersion, KAFKA_0_11_0_IV0}
 import kafka.cluster.Partition
@@ -100,6 +103,8 @@ class KafkaApis(val requestChannel: RequestChannel,
   this.logIdent = "[KafkaApi-%d] ".format(brokerId)
   val adminZkClient = new AdminZkClient(zkClient)
 
+  private val xtrace: XTraceLogger = XTrace.getLogger(classOf[KafkaApis])
+
   def close() {
     info("Shutdown complete.")
   }
@@ -166,6 +171,7 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleLeaderAndIsrRequest(request: RequestChannel.Request) {
+    xtrace.log("KafkaApis::handleLeaderAndIsrRequest()")
     // ensureTopicExists is only for client facing requests
     // We can't have the ensureTopicExists check here since the controller sends it as an advisory to all brokers so they
     // stop serving data to clients for the topic being deleted
@@ -205,6 +211,7 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleStopReplicaRequest(request: RequestChannel.Request) {
+    xtrace.log("KafkaApis::handleStopReplicaRequest()")
     // ensureTopicExists is only for client facing requests
     // We can't have the ensureTopicExists check here since the controller sends it as an advisory to all brokers so they
     // stop serving data to clients for the topic being deleted
@@ -236,6 +243,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleUpdateMetadataRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleUpdateMetadataRequest()")
+
     val correlationId = request.header.correlationId
     val updateMetadataRequest = request.body[UpdateMetadataRequest]
 
@@ -273,6 +283,7 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleControlledShutdownRequest(request: RequestChannel.Request) {
+    xtrace.log("KafkaApis::handleControlledShutdownRequest()")
     // ensureTopicExists is only for client facing requests
     // We can't have the ensureTopicExists check here since the controller sends it as an advisory to all brokers so they
     // stop serving data to clients for the topic being deleted
@@ -296,6 +307,7 @@ class KafkaApis(val requestChannel: RequestChannel,
    * Handle an offset commit request
    */
   def handleOffsetCommitRequest(request: RequestChannel.Request) {
+    xtrace.log("KafkaApis::handleOffsetCommitRequest()")
     val header = request.header
     val offsetCommitRequest = request.body[OffsetCommitRequest]
 
@@ -400,8 +412,14 @@ class KafkaApis(val requestChannel: RequestChannel,
    * Handle a produce request
    */
   def handleProduceRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleProduceRequest")
+
+    println("Handle Produce request")
+
     val produceRequest = request.body[ProduceRequest]
     val numBytesAppended = request.header.toStruct.sizeOf + request.sizeOfBodyInBytes
+
 
     if (produceRequest.hasTransactionalRecords) {
       val isAuthorizedTransactional = produceRequest.transactionalId != null &&
@@ -526,6 +544,7 @@ class KafkaApis(val requestChannel: RequestChannel,
    * Handle a fetch request
    */
   def handleFetchRequest(request: RequestChannel.Request) {
+    xtrace.log("KafkaApis::handleFetchRequest")
     val versionId = request.header.apiVersion
     val clientId = request.header.clientId
     val fetchRequest = request.body[FetchRequest]
@@ -771,6 +790,9 @@ class KafkaApis(val requestChannel: RequestChannel,
     if (fetchRequest.isFromFollower) quotas.leader else UnboundedQuota
 
   def handleListOffsetRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleListOffsetRequest")
+
     val version = request.header.apiVersion()
 
     val mergedResponseMap = if (version == 0)
@@ -994,6 +1016,9 @@ class KafkaApis(val requestChannel: RequestChannel,
    * Handle a topic metadata request
    */
   def handleTopicMetadataRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleTopicMetadataRequest()")
+
     val metadataRequest = request.body[MetadataRequest]
     val requestVersion = request.header.apiVersion
 
@@ -1081,6 +1106,9 @@ class KafkaApis(val requestChannel: RequestChannel,
    * Handle an offset fetch request
    */
   def handleOffsetFetchRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleOffsetFetchRequest()")
+
     val header = request.header
     val offsetFetchRequest = request.body[OffsetFetchRequest]
 
@@ -1155,6 +1183,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleFindCoordinatorRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleFindCoordinatorRequest()")
+
     val findCoordinatorRequest = request.body[FindCoordinatorRequest]
 
     if (findCoordinatorRequest.coordinatorType == FindCoordinatorRequest.CoordinatorType.GROUP &&
@@ -1205,6 +1236,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleDescribeGroupRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaAPis::handleDescribeGroupRequest()")
+
 
     def sendResponseCallback(describeGroupsResponseData: DescribeGroupsResponseData): Unit = {
       def createResponse(requestThrottleMs: Int): AbstractResponse = {
@@ -1267,6 +1301,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleListGroupsRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleListGroupsRequest()")
+
     val (error, groups) = groupCoordinator.handleListGroups()
     if (authorize(request.session, Describe, Resource.ClusterResource))
       // With describe cluster access all groups are returned. We keep this alternative for backward compatibility.
@@ -1280,6 +1317,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleJoinGroupRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleJoinGroupRequest()")
+
     val joinGroupRequest = request.body[JoinGroupRequest]
 
     // the callback for sending a join-group response
@@ -1344,6 +1384,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleSyncGroupRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleSyncGroupRequest()")
+
     val syncGroupRequest = request.body[SyncGroupRequest]
 
     def sendResponseCallback(memberState: Array[Byte], error: Errors) {
@@ -1365,6 +1408,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleDeleteGroupsRequest(request: RequestChannel.Request): Unit = {
+
+    xtrace.log("KafkaApis::handleDeleteGroupsRequest()")
+
     val deleteGroupsRequest = request.body[DeleteGroupsRequest]
     val groups = deleteGroupsRequest.groups.asScala.toSet
 
@@ -1380,6 +1426,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleHeartbeatRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaAPis::handleHeartbeatRequest()")
+
     val heartbeatRequest = request.body[HeartbeatRequest]
 
     // the callback for sending a heartbeat response
@@ -1407,6 +1456,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleLeaveGroupRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleLeaveGroupRequest()")
+
     val leaveGroupRequest = request.body[LeaveGroupRequest]
 
     // the callback for sending a leave-group response
@@ -1437,11 +1489,17 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleSaslHandshakeRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleSasHandshakeRequest()")
+
     val responseData = new SaslHandshakeResponseData().setErrorCode(Errors.ILLEGAL_SASL_STATE.code)
     sendResponseMaybeThrottle(request, _ => new SaslHandshakeResponse(responseData))
   }
 
   def handleSaslAuthenticateRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleSaaslAuthenticateRequest()")
+
     val responseData = new SaslAuthenticateResponseData()
       .setErrorCode(Errors.ILLEGAL_SASL_STATE.code)
       .setErrorMessage("SaslAuthenticate request received after successful authentication")
@@ -1449,6 +1507,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleApiVersionsRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleApiVersionsRequest()")
+
     // Note that broker returns its full list of supported ApiKeys and versions regardless of current
     // authentication state (e.g., before SASL authentication on an SASL listener, do note that no
     // Kafka protocol requests may take place on a SSL listener before the SSL handshake is finished).
@@ -1467,6 +1528,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleCreateTopicsRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleCreateTopicsRequest()")
+
     def sendResponseCallback(results: CreatableTopicResultSet): Unit = {
       def createResponse(requestThrottleMs: Int): AbstractResponse = {
         val responseData = new CreateTopicsResponseData().
@@ -1526,6 +1590,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleCreatePartitionsRequest(request: RequestChannel.Request): Unit = {
+
+    xtrace.log("KafkaApis::handleCraetePartitionsRequest()")
+
     val createPartitionsRequest = request.body[CreatePartitionsRequest]
 
     def sendResponseCallback(results: Map[String, ApiError]): Unit = {
@@ -1565,6 +1632,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleDeleteTopicsRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleDeleteTopicsRequest()")
+
     val deleteTopicRequest = request.body[DeleteTopicsRequest]
 
     val unauthorizedTopicErrors = mutable.Map[String, Errors]()
@@ -1616,6 +1686,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleDeleteRecordsRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleDeleteRecordsRequest()")
+
     val deleteRecordsRequest = request.body[DeleteRecordsRequest]
 
     val unauthorizedTopicResponses = mutable.Map[TopicPartition, DeleteRecordsResponse.PartitionResponse]()
@@ -1662,6 +1735,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleInitProducerIdRequest(request: RequestChannel.Request): Unit = {
+
+    xtrace.log("KafkaApis::handleInitProducerIdRequest()")
+
     val initProducerIdRequest = request.body[InitProducerIdRequest]
     val transactionalId = initProducerIdRequest.transactionalId
 
@@ -1687,6 +1763,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleEndTxnRequest(request: RequestChannel.Request): Unit = {
+
+    xtrace.log("KafkaApis::handleEndTxnRequest()")
+
     ensureInterBrokerVersion(KAFKA_0_11_0_IV0)
     val endTxnRequest = request.body[EndTxnRequest]
     val transactionalId = endTxnRequest.transactionalId
@@ -1712,6 +1791,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleWriteTxnMarkersRequest(request: RequestChannel.Request): Unit = {
+
+    xtrace.log("KafkaApis::handleWriteTxnMarkersRequest()")
+
     ensureInterBrokerVersion(KAFKA_0_11_0_IV0)
     authorizeClusterAction(request)
     val writeTxnMarkersRequest = request.body[WriteTxnMarkersRequest]
@@ -1822,6 +1904,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleAddPartitionToTxnRequest(request: RequestChannel.Request): Unit = {
+
+    xtrace.log("KafkaApis::handleAddPartitionToTxnRequest()")
+
     ensureInterBrokerVersion(KAFKA_0_11_0_IV0)
     val addPartitionsToTxnRequest = request.body[AddPartitionsToTxnRequest]
     val transactionalId = addPartitionsToTxnRequest.transactionalId
@@ -1874,6 +1959,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleAddOffsetsToTxnRequest(request: RequestChannel.Request): Unit = {
+
+    xtrace.log("KafkaApis::handleAddOffsetsToTxnRequest()")
+
     ensureInterBrokerVersion(KAFKA_0_11_0_IV0)
     val addOffsetsToTxnRequest = request.body[AddOffsetsToTxnRequest]
     val transactionalId = addOffsetsToTxnRequest.transactionalId
@@ -1906,6 +1994,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleTxnOffsetCommitRequest(request: RequestChannel.Request): Unit = {
+
+    xtrace.log("KafkaApis::handleTxnOffsetCommitRequest()")
+
     ensureInterBrokerVersion(KAFKA_0_11_0_IV0)
     val header = request.header
     val txnOffsetCommitRequest = request.body[TxnOffsetCommitRequest]
@@ -1972,6 +2063,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleDescribeAcls(request: RequestChannel.Request): Unit = {
+
+    xtrace.log("KafkaApis::handleDescribeAcls()")
+
     authorizeClusterDescribe(request)
     val describeAclsRequest = request.body[DescribeAclsRequest]
     authorizer match {
@@ -1994,6 +2088,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleCreateAcls(request: RequestChannel.Request): Unit = {
+
+    xtrace.log("KafkaApis::handleCreateAcls()")
+
     authorizeClusterAlter(request)
     val createAclsRequest = request.body[CreateAclsRequest]
     authorizer match {
@@ -2029,6 +2126,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleDeleteAcls(request: RequestChannel.Request): Unit = {
+
+    xtrace.log("KafkaApis::handleDeleteAcls()")
+
     authorizeClusterAlter(request)
     val deleteAclsRequest = request.body[DeleteAclsRequest]
     authorizer match {
@@ -2088,6 +2188,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleOffsetForLeaderEpochRequest(request: RequestChannel.Request): Unit = {
+
+    xtrace.log("KafkaApis::handleOffsetForLeaderEpochRequest()")
+
     val offsetForLeaderEpoch = request.body[OffsetsForLeaderEpochRequest]
     val requestInfo = offsetForLeaderEpoch.epochsByTopicPartition.asScala
 
@@ -2113,6 +2216,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleAlterConfigsRequest(request: RequestChannel.Request): Unit = {
+
+    xtrace.log("KafkaApis::handleAlterConfigsRequest()")
+
     val alterConfigsRequest = request.body[AlterConfigsRequest]
     val (authorizedResources, unauthorizedResources) = alterConfigsRequest.configs.asScala.partition { case (resource, _) =>
       resource.`type` match {
@@ -2141,6 +2247,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleDescribeConfigsRequest(request: RequestChannel.Request): Unit = {
+
+    xtrace.log("KafkaApis::handleDescribeConfigsRequest()")
+
     val describeConfigsRequest = request.body[DescribeConfigsRequest]
     val (authorizedResources, unauthorizedResources) = describeConfigsRequest.resources.asScala.partition { resource =>
       resource.`type` match {
@@ -2163,6 +2272,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleAlterReplicaLogDirsRequest(request: RequestChannel.Request): Unit = {
+
+    xtrace.log("KafkaApis::handleAlterReplicaLogDirsRequest()")
+
     val alterReplicaDirsRequest = request.body[AlterReplicaLogDirsRequest]
     val responseMap = {
       if (authorize(request.session, Alter, Resource.ClusterResource))
@@ -2174,6 +2286,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleDescribeLogDirsRequest(request: RequestChannel.Request): Unit = {
+
+    xtrace.log("KafkaApis::handleDescribeLogDirsRequest()")
+
     val describeLogDirsDirRequest = request.body[DescribeLogDirsRequest]
     val logDirInfos = {
       if (authorize(request.session, Describe, Resource.ClusterResource)) {
@@ -2192,6 +2307,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleCreateTokenRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleCreateTokenRequest()")
+
     val createTokenRequest = request.body[CreateDelegationTokenRequest]
 
     // the callback for sending a create token response
@@ -2225,6 +2343,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleRenewTokenRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleRenewTokenRequest()")
+
     val renewTokenRequest = request.body[RenewDelegationTokenRequest]
 
     // the callback for sending a renew token response
@@ -2248,6 +2369,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleExpireTokenRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleExpireTokenRequest()")
+
     val expireTokenRequest = request.body[ExpireDelegationTokenRequest]
 
     // the callback for sending a expire token response
@@ -2271,6 +2395,9 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleDescribeTokensRequest(request: RequestChannel.Request) {
+
+    xtrace.log("KafkaApis::handleDescribeTokensRequest()")
+
     val describeTokenRequest = request.body[DescribeDelegationTokenRequest]
 
     // the callback for sending a describe token response
@@ -2313,6 +2440,8 @@ class KafkaApis(val requestChannel: RequestChannel,
   }
 
   def handleElectPreferredReplicaLeader(request: RequestChannel.Request): Unit = {
+
+    xtrace.log("KafkaApis::handleElectPreferredReplicaLeader()")
 
     val electionRequest = request.body[ElectPreferredLeadersRequest]
     val partitions =

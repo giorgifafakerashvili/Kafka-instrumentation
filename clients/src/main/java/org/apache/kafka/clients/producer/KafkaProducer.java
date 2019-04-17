@@ -16,6 +16,8 @@
  */
 package org.apache.kafka.clients.producer;
 
+import edu.brown.cs.systems.baggage.Baggage;
+import edu.brown.cs.systems.baggage.DetachedBaggage;
 import org.apache.kafka.clients.ApiVersions;
 import org.apache.kafka.clients.ClientDnsLookup;
 import org.apache.kafka.clients.ClientUtils;
@@ -459,7 +461,7 @@ public class KafkaProducer<K, V> implements Producer<K, V> {
                 logContext);
         int retries = configureRetries(producerConfig, transactionManager != null, log);
         short acks = configureAcks(producerConfig, transactionManager != null, log);
-        return new Sender(logContext,
+        Sender sender = new Sender(logContext,
                 client,
                 metadata,
                 this.accumulator,
@@ -473,6 +475,11 @@ public class KafkaProducer<K, V> implements Producer<K, V> {
                 producerConfig.getLong(ProducerConfig.RETRY_BACKOFF_MS_CONFIG),
                 this.transactionManager,
                 apiVersions);
+
+        DetachedBaggage currentBaggage = Baggage.fork();
+        sender.detachedBaggage = currentBaggage;
+
+        return sender;
     }
 
     private static int configureDeliveryTimeout(ProducerConfig config, Logger log) {

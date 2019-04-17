@@ -24,6 +24,9 @@ import kafka.utils.Implicits._
 import kafka.server.{KafkaServer, KafkaServerStartable}
 import kafka.utils.{CommandLineUtils, Exit, Logging}
 import org.apache.kafka.common.utils.{Java, LoggingSignalHandler, OperatingSystem, Utils}
+import edu.brown.cs.systems.baggage.{Baggage, DetachedBaggage}
+import edu.brown.cs.systems.xtrace.XTrace
+import edu.brown.cs.systems.xtrace.logging.XTraceLogger
 
 import scala.collection.JavaConverters._
 
@@ -53,7 +56,11 @@ object Kafka extends Logging {
     props
   }
 
+  private val xtrace: XTraceLogger = XTrace.getLogger(this.getClass)
+
   def main(args: Array[String]): Unit = {
+
+
     try {
       val serverProps = getPropsFromArgs(args)
       val kafkaServerStartable = KafkaServerStartable.fromProps(serverProps)

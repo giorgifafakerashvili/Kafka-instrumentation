@@ -36,6 +36,7 @@ public class ClientResponse {
     private final UnsupportedVersionException versionMismatch;
     private final AuthenticationException authenticationException;
     private final AbstractResponse responseBody;
+    public String baggage;
 
     /**
      * @param requestHeader The header of the corresponding request

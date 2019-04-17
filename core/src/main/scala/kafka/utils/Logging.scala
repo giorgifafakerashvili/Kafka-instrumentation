@@ -18,6 +18,8 @@
 package kafka.utils
 
 import com.typesafe.scalalogging.Logger
+import edu.brown.cs.systems.xtrace.XTrace
+import edu.brown.cs.systems.xtrace.logging.XTraceLogger
 import org.slf4j.{LoggerFactory, Marker, MarkerFactory}
 
 
@@ -40,6 +42,8 @@ private object Logging {
 
 trait Logging {
 
+  private val xtrace: XTraceLogger = XTrace.getLogger(Logging.getClass)
+
   protected lazy val logger = Logger(LoggerFactory.getLogger(loggerName))
 
   protected var logIdent: String = _
@@ -51,33 +55,69 @@ trait Logging {
   protected def msgWithLogIdent(msg: String): String =
     if (logIdent == null) msg else logIdent + msg
 
-  def trace(msg: => String): Unit = logger.trace(msgWithLogIdent(msg))
+  def trace(msg: => String): Unit = {
+    logger.trace(msgWithLogIdent(msg))
+    xtrace.log("trace---\t" + msg)
+  }
 
-  def trace(msg: => String, e: => Throwable): Unit = logger.trace(msgWithLogIdent(msg),e)
+  def trace(msg: => String, e: => Throwable): Unit = {
+    logger.trace(msgWithLogIdent(msg),e)
+    xtrace.log("trace---\t" + msg)
+  }
 
   def isDebugEnabled: Boolean = logger.underlying.isDebugEnabled
 
   def isTraceEnabled: Boolean = logger.underlying.isTraceEnabled
 
-  def debug(msg: => String): Unit = logger.debug(msgWithLogIdent(msg))
+  def debug(msg: => String): Unit = {
+    logger.debug(msgWithLogIdent(msg))
+    xtrace.log("debug---\t" + msg)
+  }
 
-  def debug(msg: => String, e: => Throwable): Unit = logger.debug(msgWithLogIdent(msg),e)
+  def debug(msg: => String, e: => Throwable): Unit = {
+    logger.debug(msgWithLogIdent(msg),e)
+    xtrace.log(msg)
+  }
 
-  def info(msg: => String): Unit = logger.info(msgWithLogIdent(msg))
+  def info(msg: => String): Unit = {
+    logger.info(msgWithLogIdent(msg))
+    xtrace.log("info---\t" + msg)
+  }
 
-  def info(msg: => String,e: => Throwable): Unit = logger.info(msgWithLogIdent(msg),e)
+  def info(msg: => String,e: => Throwable): Unit = {
+    logger.info(msgWithLogIdent(msg),e)
+    xtrace.log("info---\t" + msg)
+  }
 
-  def warn(msg: => String): Unit = logger.warn(msgWithLogIdent(msg))
+  def warn(msg: => String): Unit = {
+    logger.warn(msgWithLogIdent(msg))
+    xtrace.log("warn---\t" + msg)
+  }
 
-  def warn(msg: => String, e: => Throwable): Unit = logger.warn(msgWithLogIdent(msg),e)
+  def warn(msg: => String, e: => Throwable): Unit = {
+    logger.warn(msgWithLogIdent(msg),e)
+    xtrace.log("warn---\t" + msg)
+  }
 
-  def error(msg: => String): Unit = logger.error(msgWithLogIdent(msg))
+  def error(msg: => String): Unit = {
+    logger.error(msgWithLogIdent(msg))
+    xtrace.log("error---\t" + msg)
+  }
 
-  def error(msg: => String, e: => Throwable): Unit = logger.error(msgWithLogIdent(msg),e)
+  def error(msg: => String, e: => Throwable): Unit = {
+    logger.error(msgWithLogIdent(msg),e)
+    xtrace.log("error---\t" + msg)
+  }
 
-  def fatal(msg: => String): Unit =
+  def fatal(msg: => String): Unit = {
     logger.error(Logging.FatalMarker, msgWithLogIdent(msg))
+    xtrace.log("fatal---\t" + msg)
+  }
 
-  def fatal(msg: => String, e: => Throwable): Unit =
+
+  def fatal(msg: => String, e: => Throwable): Unit = {
     logger.error(Logging.FatalMarker, msgWithLogIdent(msg), e)
+    xtrace.log("fatal---\t" + msg)
+  }
+
 }

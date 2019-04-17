@@ -27,6 +27,9 @@ import java.util.concurrent.atomic._
 import java.util.function.Supplier
 
 import com.yammer.metrics.core.Gauge
+import edu.brown.cs.systems.baggage.{Baggage, DetachedBaggage}
+import edu.brown.cs.systems.xtrace.XTrace
+import edu.brown.cs.systems.xtrace.logging.XTraceLogger
 import kafka.cluster.{BrokerEndPoint, EndPoint}
 import kafka.metrics.KafkaMetricsGroup
 import kafka.network.RequestChannel.{CloseConnectionResponse, EndThrottlingResponse, NoOpResponse, SendResponse, StartThrottlingResponse}
@@ -676,6 +679,8 @@ private[kafka] class Processor(val id: Int,
                                logContext: LogContext,
                                connectionQueueSize: Int = ConnectionQueueSize) extends AbstractServerThread(connectionQuotas) with KafkaMetricsGroup {
 
+  private val xtrace: XTraceLogger = XTrace.getLogger(classOf[Processor])
+
   private object ConnectionId {
     def fromString(s: String): Option[ConnectionId] = s.split("-") match {
       case Array(local, remote, index) => BrokerEndPoint.parseHostPort(local).flatMap { case (localHost, localPort) =>
@@ -800,6 +805,9 @@ private[kafka] class Processor(val id: Int,
     var currentResponse: RequestChannel.Response = null
     while ({currentResponse = dequeueResponse(); currentResponse != null}) {
       val channelId = currentResponse.request.context.connectionId
+
+      Baggage.join(currentResponse.request.getStopedBaggage())
+
       try {
         currentResponse match {
           case response: NoOpResponse =>
@@ -838,6 +846,7 @@ private[kafka] class Processor(val id: Int,
 
   // `protected` for test usage
   protected[network] def sendResponse(response: RequestChannel.Response, responseSend: Send) {
+
     val connectionId = response.request.context.connectionId
     trace(s"Socket server received response to send to $connectionId, registering for write and sending data: $response")
     // `channel` can be None if the connection was closed remotely or if selector closed it for being idle for too long
@@ -875,6 +884,7 @@ private[kafka] class Processor(val id: Int,
         openOrClosingChannel(receive.source) match {
           case Some(channel) =>
             val header = RequestHeader.parse(receive.payload)
+
             if (header.apiKey() == ApiKeys.SASL_HANDSHAKE && channel.maybeBeginServerReauthentication(receive, nowNanosSupplier))
               trace(s"Begin re-authentication: $channel")
             else {
@@ -889,6 +899,22 @@ private[kafka] class Processor(val id: Int,
                   channel.principal, listenerName, securityProtocol)
                 val req = new RequestChannel.Request(processor = id, context = context,
                   startTimeNanos = nowNanos, memoryPool, receive.payload, requestChannel.metrics)
+
+                // XTrace.startTask(true)
+
+                Baggage.start(header.baggage)
+
+                xtrace.log("Adding requst to request channel")
+
+                println("SocketServer wrapping up request")
+                if(header.baggage.length > 0) {
+                  println("header has baggage: " + header.baggage)
+                }
+
+                // Create Baggage
+                val detachedBaggage: DetachedBaggage = Baggage.fork()
+                req.setDetachedBaggage(detachedBaggage)
+
                 requestChannel.sendRequest(req)
                 selector.mute(connectionId)
                 handleChannelMuteEvent(connectionId, ChannelMuteEvent.REQUEST_RECEIVED)
@@ -1048,6 +1074,7 @@ private[kafka] class Processor(val id: Int,
 
   private[network] def enqueueResponse(response: RequestChannel.Response): Unit = {
     responseQueue.put(response)
+    response.request.stopBaggage()
     wakeup()
   }
 

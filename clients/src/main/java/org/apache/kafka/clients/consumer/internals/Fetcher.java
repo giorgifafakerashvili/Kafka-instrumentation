@@ -16,6 +16,9 @@
  */
 package org.apache.kafka.clients.consumer.internals;
 
+import edu.brown.cs.systems.baggage.Baggage;
+import edu.brown.cs.systems.xtrace.XTrace;
+import edu.brown.cs.systems.xtrace.logging.XTraceLogger;
 import org.apache.kafka.clients.ClientResponse;
 import org.apache.kafka.clients.FetchSessionHandler;
 import org.apache.kafka.clients.MetadataCache;
@@ -136,6 +139,8 @@ public class Fetcher<K, V> implements SubscriptionState.Listener, Closeable {
 
     private PartitionRecords nextInLineRecords = null;
 
+    private XTraceLogger xtrace = XTrace.getLogger(Fetcher.class);
+
     public Fetcher(LogContext logContext,
                    ConsumerNetworkClient client,
                    int minBytes,
@@ -201,6 +206,8 @@ public class Fetcher<K, V> implements SubscriptionState.Listener, Closeable {
         return !completedFetches.isEmpty();
     }
 
+    static int counter = 0;
+
     /**
      * Set-up a fetch request for any node that we have assigned partitions for which doesn't already have
      * an in-flight fetch or pending fetch data.
@@ -220,68 +227,87 @@ public class Fetcher<K, V> implements SubscriptionState.Listener, Closeable {
             if (log.isDebugEnabled()) {
                 log.debug("Sending {} {} to broker {}", isolationLevel, data.toString(), fetchTarget);
             }
-            client.send(fetchTarget, request)
-                    .addListener(new RequestFutureListener<ClientResponse>() {
-                        @Override
-                        public void onSuccess(ClientResponse resp) {
-                            synchronized (Fetcher.this) {
-                                @SuppressWarnings("unchecked")
-                                FetchResponse<Records> response = (FetchResponse<Records>) resp.responseBody();
-                                FetchSessionHandler handler = sessionHandler(fetchTarget.id());
-                                if (handler == null) {
-                                    log.error("Unable to find FetchSessionHandler for node {}. Ignoring fetch response.",
-                                            fetchTarget.id());
-                                    return;
-                                }
-                                if (!handler.handleResponse(response)) {
-                                    return;
-                                }
 
-                                Set<TopicPartition> partitions = new HashSet<>(response.responseData().keySet());
-                                FetchResponseMetricAggregator metricAggregator = new FetchResponseMetricAggregator(sensors, partitions);
+            RequestFutureListener requestFutureListener = new RequestFutureListener<ClientResponse>() {
+                @Override
+                public void onSuccess(ClientResponse resp) {
 
-                                for (Map.Entry<TopicPartition, FetchResponse.PartitionData<Records>> entry : response.responseData().entrySet()) {
-                                    TopicPartition partition = entry.getKey();
-                                    FetchRequest.PartitionData requestData = data.sessionPartitions().get(partition);
-                                    if (requestData == null) {
-                                        String message;
-                                        if (data.metadata().isFull()) {
-                                            message = MessageFormatter.arrayFormat(
-                                                    "Response for missing full request partition: partition={}; metadata={}",
-                                                    new Object[]{partition, data.metadata()}).getMessage();
-                                        } else {
-                                            message = MessageFormatter.arrayFormat(
-                                                    "Response for missing session request partition: partition={}; metadata={}; toSend={}; toForget={}",
-                                                    new Object[]{partition, data.metadata(), data.toSend(), data.toForget()}).getMessage();
-                                        }
+                    System.out.println("Counter Consumer: " + counter);
+                    counter++;
 
-                                        // Received fetch response for missing session partition
-                                        throw new IllegalStateException(message);
-                                    } else {
-                                        long fetchOffset = requestData.fetchOffset;
-                                        FetchResponse.PartitionData<Records> fetchData = entry.getValue();
+                    synchronized (Fetcher.this) {
+                        @SuppressWarnings("unchecked")
+                        FetchResponse<Records> response = (FetchResponse<Records>) resp.responseBody();
+                        FetchSessionHandler handler = sessionHandler(fetchTarget.id());
+                        if (handler == null) {
+                            log.error("Unable to find FetchSessionHandler for node {}. Ignoring fetch response.",
+                                    fetchTarget.id());
+                            return;
+                        }
+                        if (!handler.handleResponse(response)) {
+                            return;
+                        }
 
-                                        log.debug("Fetch {} at offset {} for partition {} returned fetch data {}",
-                                                isolationLevel, fetchOffset, partition, fetchData);
-                                        completedFetches.add(new CompletedFetch(partition, fetchOffset, fetchData, metricAggregator,
-                                                    resp.requestHeader().apiVersion()));
-                                    }
+                        Set<TopicPartition> partitions = new HashSet<>(response.responseData().keySet());
+                        FetchResponseMetricAggregator metricAggregator = new FetchResponseMetricAggregator(sensors, partitions);
+
+                        for (Map.Entry<TopicPartition, FetchResponse.PartitionData<Records>> entry : response.responseData().entrySet()) {
+                            TopicPartition partition = entry.getKey();
+                            FetchRequest.PartitionData requestData = data.sessionPartitions().get(partition);
+                            if (requestData == null) {
+                                String message;
+                                if (data.metadata().isFull()) {
+                                    message = MessageFormatter.arrayFormat(
+                                            "Response for missing full request partition: partition={}; metadata={}",
+                                            new Object[]{partition, data.metadata()}).getMessage();
+                                } else {
+                                    message = MessageFormatter.arrayFormat(
+                                            "Response for missing session request partition: partition={}; metadata={}; toSend={}; toForget={}",
+                                            new Object[]{partition, data.metadata(), data.toSend(), data.toForget()}).getMessage();
                                 }
 
-                                sensors.fetchLatency.record(resp.requestLatencyMs());
+                                // Received fetch response for missing session partition
+                                throw new IllegalStateException(message);
+                            } else {
+                                long fetchOffset = requestData.fetchOffset;
+                                FetchResponse.PartitionData<Records> fetchData = entry.getValue();
+
+                                log.debug("Fetch {} at offset {} for partition {} returned fetch data {}",
+                                        isolationLevel, fetchOffset, partition, fetchData);
+
+                                if(resp.requestHeader().baggage.length() > 0) {
+                                    System.out.println("Baggage start 2: " + resp.requestHeader().baggage);
+                                    Baggage.start(resp.requestHeader().baggage);
+
+                                    xtrace.log("Baggage was attached");
+                                } else {
+                                    xtrace.log("Baggage has not been attached");
+                                }
+
+                                xtrace.log("After getting response from server in consumer client side");
+                                System.out.println(Thread.currentThread().getName());
+
+                                completedFetches.add(new CompletedFetch(partition, fetchOffset, fetchData, metricAggregator,
+                                        resp.requestHeader().apiVersion()));
                             }
                         }
 
-                        @Override
-                        public void onFailure(RuntimeException e) {
-                            synchronized (Fetcher.this) {
-                                FetchSessionHandler handler = sessionHandler(fetchTarget.id());
-                                if (handler != null) {
-                                    handler.handleError(e);
-                                }
-                            }
+                        sensors.fetchLatency.record(resp.requestLatencyMs());
+                    }
+                }
+
+                @Override
+                public void onFailure(RuntimeException e) {
+                    synchronized (Fetcher.this) {
+                        FetchSessionHandler handler = sessionHandler(fetchTarget.id());
+                        if (handler != null) {
+                            handler.handleError(e);
                         }
-                    });
+                    }
+                }
+            };
+
+            client.send(fetchTarget, request).addListener(requestFutureListener);
         }
         return fetchRequestMap.size();
     }
@@ -906,9 +932,9 @@ public class Fetcher<K, V> implements SubscriptionState.Listener, Closeable {
 
                 // If we try to send during the reconnect blackout window, then the request is just
                 // going to be failed anyway before being sent, so skip the send for now
-                log.trace("Skipping fetch for partition {} because node {} is awaiting reconnect backoff", partition, node);
+                log.trace("Skipping fetch for partition 1 {} because node {} is awaiting reconnect backoff", partition, node);
             } else if (client.hasPendingRequests(node)) {
-                log.trace("Skipping fetch for partition {} because there is an in-flight request to {}", partition, node);
+                log.trace("Skipping fetch for partition 2 {} because there is an in-flight request to {}", partition, node);
             } else {
                 // if there is a leader and no in-flight requests, issue a new fetch
                 FetchSessionHandler.Builder builder = fetchable.get(node);

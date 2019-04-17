@@ -85,6 +85,10 @@ public final class ClientRequest {
         return new RequestHeader(apiKey(), version, clientId, correlationId);
     }
 
+    public RequestHeader makeHeader(short version, String baggage) {
+        return new RequestHeader(apiKey(), version, clientId, correlationId, baggage);
+    }
+
     public AbstractRequest.Builder<?> requestBuilder() {
         return requestBuilder;
     }
