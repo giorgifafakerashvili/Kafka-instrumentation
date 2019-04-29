@@ -900,16 +900,10 @@ private[kafka] class Processor(val id: Int,
                 val req = new RequestChannel.Request(processor = id, context = context,
                   startTimeNanos = nowNanos, memoryPool, receive.payload, requestChannel.metrics)
 
-                // XTrace.startTask(true)
 
                 Baggage.start(header.baggage)
 
-                xtrace.log("Adding requst to request channel")
-
-                println("SocketServer wrapping up request")
-                if(header.baggage.length > 0) {
-                  println("header has baggage: " + header.baggage)
-                }
+                xtrace.log("Adding request to request channel")
 
                 // Create Baggage
                 val detachedBaggage: DetachedBaggage = Baggage.fork()

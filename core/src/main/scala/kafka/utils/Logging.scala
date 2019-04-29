@@ -57,12 +57,12 @@ trait Logging {
 
   def trace(msg: => String): Unit = {
     logger.trace(msgWithLogIdent(msg))
-    xtrace.log("trace---\t" + msg)
+    xtrace.log(msg)
   }
 
   def trace(msg: => String, e: => Throwable): Unit = {
     logger.trace(msgWithLogIdent(msg),e)
-    xtrace.log("trace---\t" + msg)
+    xtrace.log(msg)
   }
 
   def isDebugEnabled: Boolean = logger.underlying.isDebugEnabled
@@ -71,7 +71,7 @@ trait Logging {
 
   def debug(msg: => String): Unit = {
     logger.debug(msgWithLogIdent(msg))
-    xtrace.log("debug---\t" + msg)
+    xtrace.log(msg)
   }
 
   def debug(msg: => String, e: => Throwable): Unit = {
@@ -81,43 +81,43 @@ trait Logging {
 
   def info(msg: => String): Unit = {
     logger.info(msgWithLogIdent(msg))
-    xtrace.log("info---\t" + msg)
+    xtrace.log(msg)
   }
 
   def info(msg: => String,e: => Throwable): Unit = {
     logger.info(msgWithLogIdent(msg),e)
-    xtrace.log("info---\t" + msg)
+    xtrace.log(msg)
   }
 
   def warn(msg: => String): Unit = {
     logger.warn(msgWithLogIdent(msg))
-    xtrace.log("warn---\t" + msg)
+    xtrace.log(msg)
   }
 
   def warn(msg: => String, e: => Throwable): Unit = {
     logger.warn(msgWithLogIdent(msg),e)
-    xtrace.log("warn---\t" + msg)
+    xtrace.log(msg)
   }
 
   def error(msg: => String): Unit = {
     logger.error(msgWithLogIdent(msg))
-    xtrace.log("error---\t" + msg)
+    xtrace.log(msg)
   }
 
   def error(msg: => String, e: => Throwable): Unit = {
     logger.error(msgWithLogIdent(msg),e)
-    xtrace.log("error---\t" + msg)
+    xtrace.log(msg)
   }
 
   def fatal(msg: => String): Unit = {
     logger.error(Logging.FatalMarker, msgWithLogIdent(msg))
-    xtrace.log("fatal---\t" + msg)
+    xtrace.log(msg)
   }
 
 
   def fatal(msg: => String, e: => Throwable): Unit = {
     logger.error(Logging.FatalMarker, msgWithLogIdent(msg), e)
-    xtrace.log("fatal---\t" + msg)
+    xtrace.log(msg)
   }
 
 }
