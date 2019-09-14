@@ -231,8 +231,6 @@ public class Fetcher<K, V> implements SubscriptionState.Listener, Closeable {
             RequestFutureListener requestFutureListener = new RequestFutureListener<ClientResponse>() {
                 @Override
                 public void onSuccess(ClientResponse resp) {
-
-                    System.out.println("Counter Consumer: " + counter);
                     counter++;
 
                     synchronized (Fetcher.this) {

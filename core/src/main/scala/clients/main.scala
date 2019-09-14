@@ -1,5 +1,6 @@
 package clients
 
+import java.util
 import java.util.Properties
 
 import edu.brown.cs.systems.baggage.{Baggage, DetachedBaggage}
@@ -23,8 +24,6 @@ class MyCallback extends Callback {
 
 object Main {
 
-  private val xtrace: XTraceLogger = XTrace.getLogger(Main.getClass)
-
   def main(args: Array[String]): Unit = {
 
     val props: Properties = new Properties()
@@ -37,32 +36,15 @@ object Main {
     props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
     props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
 
-
-    XTrace.startTask(true)
-
-    xtrace.log("START")
-
-    val myCallback:MyCallback = new MyCallback
-
     val producer: KafkaProducer[String, String] = new KafkaProducer(props)
 
-    val producerRecord: ProducerRecord[String, String] = new ProducerRecord[String,String]("my-topic", "Fafakerashvili", "Fafakerashvili")
-
-
-    var counter: Int = 0
-    for(_ <- 1 until 10000) {
-      producer.send(producerRecord, myCallback)
-      println(counter)
-      counter = counter + 1
+    while (true) {
+      val producerRecord: ProducerRecord[String, String] = new ProducerRecord[String,String]("my-topic", "producer1", System.currentTimeMillis().toString)
+      producer.send(producerRecord)
     }
 
 
     producer.flush()
     producer.close()
-
-    PubSub.close()
-    PubSub.join()
-
-
   }
 }

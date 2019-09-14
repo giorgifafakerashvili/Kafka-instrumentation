@@ -415,8 +415,6 @@ class KafkaApis(val requestChannel: RequestChannel,
 
     xtrace.log("KafkaApis::handleProduceRequest")
 
-    println("Handle Produce request")
-
     val produceRequest = request.body[ProduceRequest]
     val numBytesAppended = request.header.toStruct.sizeOf + request.sizeOfBodyInBytes
 

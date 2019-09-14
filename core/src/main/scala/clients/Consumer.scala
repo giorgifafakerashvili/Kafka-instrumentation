@@ -25,28 +25,30 @@ object Consumer {
     props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
     props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
 
-    XTrace.startTask(true)
-
-    xtrace.log("CONSUMER START")
-
 
     val consumer: KafkaConsumer[String, String] = new KafkaConsumer[String, String](props)
     consumer.subscribe(util.Collections.singletonList("my-topic"))
 
+    var sum: Long = 0
+    var counter: Int = 0
 
     while(true) {
-      xtrace.log("********* POLL ****************")
-      val records: ConsumerRecords[String, String] = consumer.poll(1000)
-      records.asScala.foreach(record =>
-        println(s"Received message: $record")
+      val records: ConsumerRecords[String, String] = consumer.poll(10)
+      records.asScala.foreach(record =>  {
+          val value: Long = record.value().toLong
+          val timeDiff: Long = System.currentTimeMillis() - value
+
+          sum += timeDiff / 1000
+          counter += 1
+
+          if (counter >= 30) {
+            println("Average latency: " + (sum / counter))
+            counter = 0
+            sum = 0
+          }
+        }
       )
-      xtrace.log("*********** Records has been processed ******************")
     }
-
-
-
-    PubSub.close()
-    PubSub.join()
 
   }
 }

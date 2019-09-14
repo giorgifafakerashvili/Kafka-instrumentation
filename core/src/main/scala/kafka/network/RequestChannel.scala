@@ -306,6 +306,21 @@ class RequestChannel(val queueSize: Int, val metricNamePrefix : String) extends 
 
   private val xtrace: XTraceLogger = XTrace.getLogger(classOf[RequestChannel])
 
+  println("Param: QueueSize: " + queueSize)
+
+  val thread = new Thread {
+    override def run(): Unit = {
+      while (true) {
+        if (requestQueue.size() > 0) {
+          println ("QueueSize: " + requestQueue.size())
+        }
+        Thread.sleep(50)
+      }
+    }
+  }
+
+  thread.start()
+
   newGauge(requestQueueSizeMetricName, new Gauge[Int] {
       def value = requestQueue.size
   })
