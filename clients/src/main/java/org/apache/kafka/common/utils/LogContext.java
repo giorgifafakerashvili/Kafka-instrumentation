@@ -463,7 +463,7 @@ public class LogContext {
                 message = formatted.getMessage();
             }
             logger.log(marker, fqcn, level, addPrefix(message), null, exception);
-            xtrace.log(addPrefix(message));
+//            xtrace.log(addPrefix(message));
         }
     }
 
@@ -532,7 +532,7 @@ public class LogContext {
 
         @Override
         public void trace(String message) {
-            xtrace.log(message);
+//            xtrace.log(message);
             if (logger.isTraceEnabled()) {
                 logger.trace(addPrefix(message));
             }
@@ -540,7 +540,7 @@ public class LogContext {
 
         @Override
         public void trace(String message, Object arg) {
-            xtrace.log(addPrefix(message));
+//            xtrace.log(addPrefix(message));
             System.out.println(message);
             if (logger.isTraceEnabled()) {
                 logger.trace(addPrefix(message), arg);
@@ -549,7 +549,7 @@ public class LogContext {
 
         @Override
         public void trace(String message, Object arg1, Object arg2) {
-            xtrace.log(addPrefix(message));
+//            xtrace.log(addPrefix(message));
             System.out.println(message);
             if (logger.isTraceEnabled()) {
                 logger.trace(addPrefix(message), arg1, arg2);
@@ -558,7 +558,7 @@ public class LogContext {
 
         @Override
         public void trace(String message, Object... args) {
-            xtrace.log(addPrefix(message));
+//            xtrace.log(addPrefix(message));
             System.out.println(message);
             if (logger.isTraceEnabled()) {
                 logger.trace(addPrefix(message), args);
@@ -567,7 +567,7 @@ public class LogContext {
 
         @Override
         public void trace(String msg, Throwable t) {
-            xtrace.log(addPrefix(msg));
+//            xtrace.log(addPrefix(msg));
             if (logger.isTraceEnabled()) {
                 logger.trace(addPrefix(msg), t);
             }
@@ -575,7 +575,7 @@ public class LogContext {
 
         @Override
         public void trace(Marker marker, String msg) {
-            xtrace.log(msg);
+//            xtrace.log(msg);
             if (logger.isTraceEnabled()) {
                 logger.trace(marker, addPrefix(msg));
             }
@@ -583,7 +583,7 @@ public class LogContext {
 
         @Override
         public void trace(Marker marker, String format, Object arg) {
-            xtrace.log(addPrefix(format));
+//            xtrace.log(addPrefix(format));
             System.out.println(format);
             if (logger.isTraceEnabled()) {
                 logger.trace(marker, addPrefix(format), arg);
@@ -592,7 +592,7 @@ public class LogContext {
 
         @Override
         public void trace(Marker marker, String format, Object arg1, Object arg2) {
-            xtrace.log(addPrefix(format));
+//            xtrace.log(addPrefix(format));
             System.out.println(format);
             if (logger.isTraceEnabled()) {
                 logger.trace(marker, addPrefix(format), arg1, arg2);
@@ -601,7 +601,7 @@ public class LogContext {
 
         @Override
         public void trace(Marker marker, String format, Object... argArray) {
-            xtrace.log(addPrefix(format));
+//            xtrace.log(addPrefix(format));
             System.out.println(addPrefix(format));
             if (logger.isTraceEnabled()) {
                 logger.trace(marker, addPrefix(format), argArray);
@@ -610,7 +610,7 @@ public class LogContext {
 
         @Override
         public void trace(Marker marker, String msg, Throwable t) {
-            xtrace.log(addPrefix(msg));
+//            xtrace.log(addPrefix(msg));
             System.out.println(msg);
             if (logger.isTraceEnabled()) {
                 logger.trace(marker, addPrefix(msg), t);
@@ -619,7 +619,7 @@ public class LogContext {
 
         @Override
         public void debug(String message) {
-            xtrace.log(message);
+//            xtrace.log(message);
             if (logger.isDebugEnabled()) {
                 logger.debug(addPrefix(message));
             }
@@ -627,7 +627,7 @@ public class LogContext {
 
         @Override
         public void debug(String message, Object arg) {
-            xtrace.log(message, arg);
+//            xtrace.log(message, arg);
             System.out.println(message);
             if (logger.isDebugEnabled()) {
                 logger.debug(addPrefix(message), arg);
@@ -636,7 +636,7 @@ public class LogContext {
 
         @Override
         public void debug(String message, Object arg1, Object arg2) {
-            xtrace.log(message, arg1, arg2);
+//            xtrace.log(message, arg1, arg2);
             System.out.println(message);
             if (logger.isDebugEnabled()) {
                 logger.debug(addPrefix(message), arg1, arg2);
@@ -645,7 +645,7 @@ public class LogContext {
 
         @Override
         public void debug(String message, Object... args) {
-            xtrace.log(message, args);
+//            xtrace.log(message, args);
             System.out.println(message);
             if (logger.isDebugEnabled()) {
                 logger.debug(addPrefix(message), args);
@@ -654,7 +654,7 @@ public class LogContext {
 
         @Override
         public void debug(String msg, Throwable t) {
-            xtrace.log(addPrefix(msg));
+//            xtrace.log(addPrefix(msg));
             if (logger.isDebugEnabled()) {
                 logger.debug(addPrefix(msg), t);
             }
@@ -662,7 +662,7 @@ public class LogContext {
 
         @Override
         public void debug(Marker marker, String msg) {
-            xtrace.log(addPrefix(msg));
+//            xtrace.log(addPrefix(msg));
             System.out.println(msg);
             if (logger.isDebugEnabled()) {
                 logger.debug(marker, addPrefix(msg));
@@ -671,7 +671,7 @@ public class LogContext {
 
         @Override
         public void debug(Marker marker, String format, Object arg) {
-            xtrace.log(addPrefix(format), arg);
+//            xtrace.log(addPrefix(format), arg);
             System.out.println(format);
             if (logger.isDebugEnabled()) {
                 logger.debug(marker, addPrefix(format), arg);
@@ -680,7 +680,7 @@ public class LogContext {
 
         @Override
         public void debug(Marker marker, String format, Object arg1, Object arg2) {
-            xtrace.log(format, arg1, arg2);
+//            xtrace.log(format, arg1, arg2);
             if (logger.isDebugEnabled()) {
                 logger.debug(marker, addPrefix(format), arg1, arg2);
             }
@@ -688,7 +688,7 @@ public class LogContext {
 
         @Override
         public void debug(Marker marker, String format, Object... arguments) {
-            xtrace.log(format, arguments);
+//            xtrace.log(format, arguments);
             if (logger.isDebugEnabled()) {
                 logger.debug(marker, addPrefix(format), arguments);
             }
@@ -696,7 +696,7 @@ public class LogContext {
 
         @Override
         public void debug(Marker marker, String msg, Throwable t) {
-            xtrace.log(msg);
+//            xtrace.log(msg);
             if (logger.isDebugEnabled()) {
                 logger.debug(marker, addPrefix(msg), t);
             }
@@ -704,183 +704,183 @@ public class LogContext {
 
         @Override
         public void warn(String message) {
-            xtrace.log(message);
+//            xtrace.log(message);
             logger.warn(addPrefix(message));
         }
 
         @Override
         public void warn(String message, Object arg) {
-            xtrace.log(message, arg);
+//            xtrace.log(message, arg);
             logger.warn(addPrefix(message), arg);
         }
 
         @Override
         public void warn(String message, Object arg1, Object arg2) {
-            xtrace.log(message, arg1, arg2);
+//            xtrace.log(message, arg1, arg2);
             logger.warn(addPrefix(message), arg1, arg2);
         }
 
         @Override
         public void warn(String message, Object... args) {
-            xtrace.log(message, args);
+//            xtrace.log(message, args);
             logger.warn(addPrefix(message), args);
         }
 
         @Override
         public void warn(String msg, Throwable t) {
-            xtrace.log(msg);
+//            xtrace.log(msg);
             logger.warn(addPrefix(msg), t);
         }
 
         @Override
         public void warn(Marker marker, String msg) {
-            xtrace.log(msg);
+//            xtrace.log(msg);
             logger.warn(marker, addPrefix(msg));
         }
 
         @Override
         public void warn(Marker marker, String format, Object arg) {
-            xtrace.log(format, arg);
+//            xtrace.log(format, arg);
             logger.warn(marker, addPrefix(format), arg);
         }
 
         @Override
         public void warn(Marker marker, String format, Object arg1, Object arg2) {
-            xtrace.log(format, arg1, arg2);
+//            xtrace.log(format, arg1, arg2);
             logger.warn(marker, addPrefix(format), arg1, arg2);
         }
 
         @Override
         public void warn(Marker marker, String format, Object... arguments) {
-            xtrace.log(format, arguments);
+//            xtrace.log(format, arguments);
             logger.warn(marker, addPrefix(format), arguments);
         }
 
         @Override
         public void warn(Marker marker, String msg, Throwable t) {
-            xtrace.log(msg);
+//            xtrace.log(msg);
             logger.warn(marker, addPrefix(msg), t);
         }
 
         @Override
         public void error(String message) {
-            xtrace.log(message);
+//            xtrace.log(message);
             logger.error(addPrefix(message));
         }
 
         @Override
         public void error(String message, Object arg) {
-            xtrace.log(message, arg);
+//            xtrace.log(message, arg);
             logger.error(addPrefix(message), arg);
         }
 
         @Override
         public void error(String message, Object arg1, Object arg2) {
-            xtrace.log(message, arg1, arg2);
+//            xtrace.log(message, arg1, arg2);
             logger.error(addPrefix(message), arg1, arg2);
         }
 
         @Override
         public void error(String message, Object... args) {
-            xtrace.log(message, args);
+//            xtrace.log(message, args);
             logger.error(addPrefix(message), args);
         }
 
         @Override
         public void error(String msg, Throwable t) {
-            xtrace.log(msg);
+//            xtrace.log(msg);
             logger.error(addPrefix(msg), t);
         }
 
         @Override
         public void error(Marker marker, String msg) {
-            xtrace.log(msg);
+//            xtrace.log(msg);
             logger.error(marker, addPrefix(msg));
         }
 
         @Override
         public void error(Marker marker, String format, Object arg) {
-            xtrace.log(format, arg);
+//            xtrace.log(format, arg);
             logger.error(marker, addPrefix(format), arg);
         }
 
         @Override
         public void error(Marker marker, String format, Object arg1, Object arg2) {
-            xtrace.log(format, arg1, arg2);
+//            xtrace.log(format, arg1, arg2);
             logger.error(marker, addPrefix(format), arg1, arg2);
         }
 
         @Override
         public void error(Marker marker, String format, Object... arguments) {
-            xtrace.log(format, arguments);
+//            xtrace.log(format, arguments);
             logger.error(marker, addPrefix(format), arguments);
         }
 
         @Override
         public void error(Marker marker, String msg, Throwable t) {
-            xtrace.log(msg);
+//            xtrace.log(msg);
             logger.error(marker, addPrefix(msg), t);
         }
 
         @Override
         public void info(String message) {
-            xtrace.log(message);
+//            xtrace.log(message);
             logger.info(addPrefix(message));
         }
 
         @Override
         public void info(String message, Object arg) {
-            xtrace.log(message, arg);
+//            xtrace.log(message, arg);
             logger.info(addPrefix(message), arg);
         }
 
         @Override
         public void info(String message, Object arg1, Object arg2) {
-            xtrace.log(message, arg1, arg2);
+//            xtrace.log(message, arg1, arg2);
             logger.info(addPrefix(message), arg1, arg2);
         }
 
         @Override
         public void info(String message, Object... args) {
-            xtrace.log(message, args);
+//            xtrace.log(message, args);
             logger.info(addPrefix(message), args);
         }
 
         @Override
         public void info(String msg, Throwable t) {
-            xtrace.log(msg);
+//            xtrace.log(msg);
             logger.info(addPrefix(msg), t);
         }
 
         @Override
         public void info(Marker marker, String msg) {
-            xtrace.log(msg);
+//            xtrace.log(msg);
             logger.info(marker, addPrefix(msg));
         }
 
         @Override
         public void info(Marker marker, String format, Object arg) {
-            xtrace.log(format, arg);
+//            xtrace.log(format, arg);
             logger.info(marker, addPrefix(format), arg);
         }
 
         @Override
         public void info(Marker marker, String format, Object arg1, Object arg2) {
-            xtrace.log(format, arg1, arg2);
+//            xtrace.log(format, arg1, arg2);
             System.out.println(format);
             logger.info(marker, addPrefix(format), arg1, arg2);
         }
 
         @Override
         public void info(Marker marker, String format, Object... arguments) {
-            xtrace.log(format, arguments);
+//            xtrace.log(format, arguments);
             System.out.println(format);
             logger.info(marker, addPrefix(format), arguments);
         }
 
         @Override
         public void info(Marker marker, String msg, Throwable t) {
-            xtrace.log(addPrefix(msg));
+//            xtrace.log(addPrefix(msg));
             System.out.println(addPrefix(msg));
             logger.info(marker, addPrefix(msg), t);
         }
