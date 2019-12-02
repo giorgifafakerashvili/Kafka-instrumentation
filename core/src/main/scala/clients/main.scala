@@ -50,7 +50,7 @@ object Main {
 
 
     var counter: Int = 0
-    for(_ <- 1 until 10000) {
+    for(_ <- 1 until 2) {
       producer.send(producerRecord, myCallback)
       println(counter)
       counter = counter + 1
