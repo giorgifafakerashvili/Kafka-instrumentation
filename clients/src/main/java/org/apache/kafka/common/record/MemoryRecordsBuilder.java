@@ -16,6 +16,10 @@
  */
 package org.apache.kafka.common.record;
 
+import edu.brown.cs.systems.baggage.Baggage;
+import edu.brown.cs.systems.xtrace.XTrace;
+import edu.brown.cs.systems.xtrace.logging.XTraceLogger;
+import org.apache.kafka.TracingStorage;
 import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.protocol.types.Struct;
@@ -78,6 +82,7 @@ public class MemoryRecordsBuilder implements AutoCloseable {
     private long offsetOfMaxTimestamp = -1;
     private Long lastOffset = null;
     private Long firstTimestamp = null;
+    private XTraceLogger xtrace = XTrace.getLogger(MemoryRecordsBuilder.class);
 
     private MemoryRecords builtRecords;
     private boolean aborted = false;
@@ -397,6 +402,10 @@ public class MemoryRecordsBuilder implements AutoCloseable {
      */
     private Long appendWithOffset(long offset, boolean isControlRecord, long timestamp, ByteBuffer key,
                                   ByteBuffer value, Header[] headers) {
+        xtrace.log("MemoryRecords::appendWIthOffset() Appending message to builder with offset = " + Long.toString(offset));
+
+        TracingStorage.addTrace(timestamp, Baggage.fork());
+
         try {
             if (isControlRecord != isControlBatch)
                 throw new IllegalArgumentException("Control records can only be appended to control batches");

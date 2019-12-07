@@ -27,6 +27,7 @@ import com.yammer.metrics.core.Meter
 import edu.brown.cs.systems.baggage.{Baggage, DetachedBaggage}
 import edu.brown.cs.systems.xtrace.XTrace
 import edu.brown.cs.systems.xtrace.logging.XTraceLogger
+import org.apache.kafka.TracingStorage
 import org.apache.kafka.common.internals.FatalExitError
 import org.apache.kafka.common.utils.{KafkaThread, Time}
 

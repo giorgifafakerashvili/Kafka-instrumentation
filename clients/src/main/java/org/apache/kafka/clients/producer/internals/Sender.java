@@ -22,6 +22,7 @@ import edu.brown.cs.systems.baggage.Baggage;
 import edu.brown.cs.systems.baggage.DetachedBaggage;
 import edu.brown.cs.systems.xtrace.XTrace;
 import edu.brown.cs.systems.xtrace.logging.XTraceLogger;
+import org.apache.kafka.TracingStorage;
 import org.apache.kafka.clients.ApiVersions;
 import org.apache.kafka.clients.ClientRequest;
 import org.apache.kafka.clients.ClientResponse;
@@ -50,14 +51,14 @@ import org.apache.kafka.common.metrics.stats.Avg;
 import org.apache.kafka.common.metrics.stats.Max;
 import org.apache.kafka.common.metrics.stats.Meter;
 import org.apache.kafka.common.protocol.Errors;
-import org.apache.kafka.common.record.MemoryRecords;
-import org.apache.kafka.common.record.RecordBatch;
+import org.apache.kafka.common.record.*;
 import org.apache.kafka.common.requests.AbstractRequest;
 import org.apache.kafka.common.requests.InitProducerIdRequest;
 import org.apache.kafka.common.requests.InitProducerIdResponse;
 import org.apache.kafka.common.requests.ProduceRequest;
 import org.apache.kafka.common.requests.ProduceResponse;
 import org.apache.kafka.common.requests.RequestHeader;
+import org.apache.kafka.common.utils.CloseableIterator;
 import org.apache.kafka.common.utils.LogContext;
 import org.apache.kafka.common.utils.Time;
 import org.apache.kafka.common.utils.Utils;
@@ -777,6 +778,25 @@ public class Sender implements Runnable {
         for (ProducerBatch batch : batches) {
             TopicPartition tp = batch.topicPartition;
             MemoryRecords records = batch.records();
+
+
+            //
+            Iterator<MutableRecordBatch> batchIterator = records.batchIterator();
+            while (batchIterator.hasNext()) {
+                RecordBatch current_batch = batchIterator.next();
+                try (CloseableIterator<Record> recordsIterator = current_batch.streamingIterator(BufferSupplier.create())) {
+                    while (recordsIterator.hasNext()) {
+                        Record record = recordsIterator.next();
+
+                        if (TracingStorage.hasTrace(record.timestamp())) {
+                            Baggage.start(TracingStorage.getTrace(record.timestamp()));
+                        }
+
+                        xtrace.log("Inside sender");
+                    }
+                }
+            }
+
 
             // down convert if necessary to the minimum magic used. In general, there can be a delay between the time
             // that the producer starts building the batch and the time that we send the request, and we may have

@@ -28,6 +28,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import edu.brown.cs.systems.xtrace.XTrace;
+import edu.brown.cs.systems.xtrace.logging.XTraceLogger;
 import org.apache.kafka.clients.ApiVersions;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.common.Cluster;
@@ -85,6 +88,7 @@ public final class RecordAccumulator {
     private int drainIndex;
     private final TransactionManager transactionManager;
     private long nextBatchExpiryTimeMs = Long.MAX_VALUE; // the earliest time (absolute) a batch will expire.
+    private final XTraceLogger xtrace = XTrace.getLogger(RecordAccumulator.class);
 
     /**
      * Create a new record accumulator
@@ -187,6 +191,7 @@ public final class RecordAccumulator {
                                      Header[] headers,
                                      Callback callback,
                                      long maxTimeToBlock) throws InterruptedException {
+        xtrace.log("RecordAccumulator::append() Starting of apend");
         // We keep track of the number of appending thread to make sure we do not miss batches in
         // abortIncompleteBatches().
         appendsInProgress.incrementAndGet();
@@ -203,6 +208,7 @@ public final class RecordAccumulator {
                     return appendResult;
             }
 
+            xtrace.log("RecordAccumulator::append() We have to create new ProducerBatch");
             // we don't have an in-progress record batch try to allocate a new batch
             byte maxUsableMagic = apiVersions.maxUsableProduceMagic();
             int size = Math.max(this.batchSize, AbstractRecords.estimateSizeInBytesUpperBound(maxUsableMagic, compression, key, value, headers));
@@ -215,10 +221,12 @@ public final class RecordAccumulator {
 
                 RecordAppendResult appendResult = tryAppend(timestamp, key, value, headers, callback, dq);
                 if (appendResult != null) {
+                    xtrace.log("RecordAccumulaotr::append() Somebdoy else found batch");
                     // Somebody else found us a batch, return the one we waited for! Hopefully this doesn't happen often...
                     return appendResult;
                 }
 
+                xtrace.log("RecordAccumulator::append() Creating MemoryRecords/ProducerBatch");
                 MemoryRecordsBuilder recordsBuilder = recordsBuilder(buffer, maxUsableMagic);
                 ProducerBatch batch = new ProducerBatch(tp, recordsBuilder, time.milliseconds());
                 FutureRecordMetadata future = Utils.notNull(batch.tryAppend(timestamp, key, value, headers, callback, time.milliseconds()));

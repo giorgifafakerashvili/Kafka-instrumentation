@@ -43,11 +43,11 @@ public class KafkaThread extends Thread {
         }
 
         @Override public void run() {
-            Baggage.start(b);
-            xtrace.log("Entered BaggageRunnable.run()");
+//            Baggage.start(b);
+//            xtrace.log("Entered BaggageRunnable.run()");
             r.run();
-            xtrace.log("Exiting BaggageRunnable.run()");
-            b = Baggage.stop();
+//            xtrace.log("Exiting BaggageRunnable.run()");
+//            b = Baggage.stop();
         }
     }
     

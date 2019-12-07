@@ -16,6 +16,8 @@
  */
 package org.apache.kafka.clients.producer.internals;
 
+import edu.brown.cs.systems.xtrace.XTrace;
+import edu.brown.cs.systems.xtrace.logging.XTraceLogger;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
@@ -67,6 +69,7 @@ public final class ProducerBatch {
     private final AtomicInteger attempts = new AtomicInteger(0);
     private final boolean isSplitBatch;
     private final AtomicReference<FinalState> finalState = new AtomicReference<>(null);
+    private final XTraceLogger xtrace = XTrace.getLogger(ProducerBatch.class);
 
     int recordCount;
     int maxRecordSize;
@@ -100,9 +103,12 @@ public final class ProducerBatch {
      * @return The RecordSend corresponding to this record or null if there isn't sufficient room.
      */
     public FutureRecordMetadata tryAppend(long timestamp, byte[] key, byte[] value, Header[] headers, Callback callback, long now) {
+        xtrace.log("ProducerBatch::tryAppend() Starting");
         if (!recordsBuilder.hasRoomFor(timestamp, key, value, headers)) {
+            xtrace.log("Records builder has not enough room");
             return null;
         } else {
+            xtrace.log("ProducerBatch::tryAppend() Before apending to recordsBuilder");
             Long checksum = this.recordsBuilder.append(timestamp, key, value, headers);
             this.maxRecordSize = Math.max(this.maxRecordSize, AbstractRecords.estimateSizeInBytesUpperBound(magic(),
                     recordsBuilder.compressionType(), key, value, headers));

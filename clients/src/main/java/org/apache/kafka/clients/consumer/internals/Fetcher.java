@@ -276,7 +276,6 @@ public class Fetcher<K, V> implements SubscriptionState.Listener, Closeable {
                                         isolationLevel, fetchOffset, partition, fetchData);
 
                                 if(resp.requestHeader().baggage.length() > 0) {
-                                    System.out.println("Baggage start 2: " + resp.requestHeader().baggage);
                                     Baggage.start(resp.requestHeader().baggage);
 
                                     xtrace.log("Baggage was attached");

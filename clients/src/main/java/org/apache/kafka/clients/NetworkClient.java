@@ -498,10 +498,8 @@ public class NetworkClient implements KafkaClient {
     private void doSend(ClientRequest clientRequest, boolean isInternalRequest, long now, AbstractRequest request) {
         String destination = clientRequest.destination();
 
-
         DetachedBaggage b = Baggage.fork();
         String serializedBaggage = b.toString(DetachedBaggage.StringEncoding.BASE64);
-
         RequestHeader header = clientRequest.makeHeader(request.version(), serializedBaggage);
 
         if (log.isDebugEnabled()) {
@@ -573,10 +571,9 @@ public class NetworkClient implements KafkaClient {
         for (ClientResponse response : responses) {
             try {
                 if(response.baggage.length() > 0) {
-                    System.out.println("Baggage start 1: " + response.baggage);
                     Baggage.start(response.baggage);
 
-                    xtrace.log(".......................\n...............\n..............");
+                    xtrace.log("NetworkClient::completeResponses()");
                 }
                 response.onComplete();
             } catch (Exception e) {
@@ -870,6 +867,7 @@ public class NetworkClient implements KafkaClient {
             maybeThrottle(body, req.header.apiVersion(), req.destination, now);
             if (req.isInternalRequest && body instanceof MetadataResponse) {
                 Baggage.start(req.serverReturnedBaggage);
+                xtrace.log("NetworkClient::handleCompletedRecevies()");
                 metadataUpdater.handleCompletedMetadataResponse(req.header, now, (MetadataResponse) body);
             }
             else if (req.isInternalRequest && body instanceof ApiVersionsResponse)
@@ -882,6 +880,7 @@ public class NetworkClient implements KafkaClient {
     private void handleApiVersionsResponse(List<ClientResponse> responses,
                                            InFlightRequest req, long now, ApiVersionsResponse apiVersionsResponse) {
         Baggage.start(req.serverReturnedBaggage);
+        xtrace.log("NetworkClient::handleApiVersionsResponse()");
         final String node = req.destination;
         if (apiVersionsResponse.error() != Errors.NONE) {
             if (req.request.version() == 0 || apiVersionsResponse.error() != Errors.UNSUPPORTED_VERSION) {
